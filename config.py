@@ -1,0 +1,48 @@
+import os
+import logging
+from urlparse import urlparse
+
+class Config(dict):
+    """
+    Global config. CEXEC does not boot up unless all variables defined here are
+    initialized
+    """
+    def __init__(self):
+        self['HOME'] = os.getenv('HOME', '/root')
+
+        self['USER_BUFFER_TIMEOUT'] = 2
+        self['MAX_COMMAND_SECONDS'] = 60 * 30
+        self['MAX_USER_LOG_SIZE'] = 12 * 1024 * 1024
+        self['CONSOLE_BUFFER_LENGTH'] = 20
+
+        self['RUN_MODE'] = os.getenv('RUN_MODE', 'PROD')
+        if 'prod' in self['RUN_MODE'].lower():
+            self['LOG_LEVEL'] = 'INFO'
+        elif 'beta' in self['RUN_MODE'].lower():
+            self['LOG_LEVEL'] = 'INFO'
+        else:
+            self['LOG_LEVEL'] = 'DEBUG'
+
+        self['SHIPPABLE_API_TOKEN'] = os.getenv('SHIPPABLE_API_TOKEN', '')
+        self['SHIPPABLE_API_URL'] = os.getenv('SHIPPABLE_API_URL', '')
+        self['SHIPPABLE_VORTEX_URL'] = "{0}/vortex".format(self['SHIPPABLE_API_URL'])
+        self['SHIPPABLE_API_RETRY_INTERVAL'] = os.getenv('SHIPPABLE_API_RETRY_INTERVAL', '')
+
+        self['SYSTEM_LOGGING_ENABLED'] = False
+        self['USER_SYSTEM_LOGGING_ENABLED'] = True
+
+        self['MESSAGE_DIR'] = os.getenv('MESSAGE_DIR', '/cexec')
+        self['MESSAGE_JSON_NAME'] = os.getenv('MESSAGE_JSON_NAME', 'message.json')
+        self['WHO'] = os.getenv('WHO', 'cexec')
+
+        for k, v in self.iteritems():
+            if v == '':
+                print('{0} has no value. Make sure the container environment has a '
+                               'variable {0} with a valid value'.format(k))
+                raise Exception('{0} has no value. Make sure the container environment has a '
+                               'variable {0} with a valid value'.format(k))
+
+    def __str__(self):
+        for k, v in self.iteritems():
+            print('{0} - {1}'.format(k, v))
+        return ''
