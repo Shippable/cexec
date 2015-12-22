@@ -1,0 +1,76 @@
+#!/bin/bash -e
+
+## Component specific config ##
+export COMPONENT=cexec
+export VOLUME_MOUNTS=" -v /usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/cexec:/cexec"
+
+## Generic code ##
+## component onbox name is consistent with docker-compose naming conventions
+export ONEBOX_NAME=components_"$COMPONENT"_1_onebox
+export ONE_DIR="$(dirname $(pwd))"/one
+export COMPONENT_CONFIG="$ONE_DIR/components/$COMPONENT.yml"
+export COMPONENT_ENV_FILE="$ONE_DIR/components/$COMPONENT.env"
+export COMPONENT_ENV_VAL=()
+
+check_one() {
+  if [ ! -d $ONE_DIR ]; then
+    echo "Error: please clone https://github.com/Shippable/one.git before continuing"
+    exit 1
+  else
+    echo "'one' present..."
+  fi
+}
+
+check_component_config() {
+  if [ ! -f $COMPONENT_CONFIG ]; then
+    echo "Error: $COMPONENT.yml not found..."
+    exit 1
+  fi
+
+  if [ ! -f $COMPONENT_ENV_FILE ]; then
+    echo "Error: $COMPONENT.env not found..."
+    exit 1
+  fi
+
+  echo "'$COMPONENT' configs present..."
+}
+
+stop_component() {
+  onebox_info=$(sudo docker ps -a | grep $ONEBOX_NAME | awk '{print $1}')
+  if [ -z "$onebox_info" ]; then
+    echo "No $COMPONENT containers running in onebox mode"
+    stop_component_cmd=$(sudo docker-compose -f $COMPONENT_CONFIG stop)
+    stop_component_exc=$($stop_component_cmd)
+    echo "$stop_component_exc"
+  else
+    echo "Component containers running in onebox mode"
+    sudo docker rm -f "$ONEBOX_NAME" || true
+  fi
+}
+
+build_image() {
+  echo "Building image..."
+  sudo docker build --rm=true -t shipimg/$COMPONENT .
+}
+
+run_component() {
+  echo "Starting $COMPONENT..."
+  run_cmd="sudo docker run -d --name=$ONEBOX_NAME --privileged=true --restart=no --net=host"
+  env_export_str=""
+  run_cmd="$run_cmd `awk '{print "-e "$0}' $COMPONENT_ENV_FILE` "
+  run_cmd="$run_cmd $env_export_str "
+  run_cmd="$run_cmd $VOLUME_MOUNTS "
+  run_cmd="$run_cmd -v $(pwd):/home/shippable/$COMPONENT:rw "
+  run_cmd="$run_cmd -t shipimg/$COMPONENT"
+
+  echo $run_cmd
+  run_cmd_exc=$($run_cmd)
+  echo "$run_cmd_exc"
+  docker logs -f $run_cmd_exc
+}
+
+check_one
+check_component_config
+stop_component
+build_image
+run_component
