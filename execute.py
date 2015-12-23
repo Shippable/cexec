@@ -13,16 +13,20 @@ class Execute(Base):
         self.steps = self.__validate_message()
 
     def __load_message_from_file(self):
-        message_json_full_path = os.path.join(self.config['MESSAGE_DIR'],
-                self.config['MESSAGE_JSON_NAME'])
+        message_json_full_path = os.path.join(
+            self.config['MESSAGE_DIR'],
+            self.config['MESSAGE_JSON_NAME'])
         if not os.path.isfile(message_json_full_path):
-            error_message = 'The file {0} was not found'.format(message_json_full_path)
+            error_message = 'The file {0} was not found'.format(
+                message_json_full_path)
             raise Exception(error_message)
 
         with open(message_json_full_path, 'r') as message_json_file:
             raw_message = message_json_file.read()
 
-        self.log.debug('Loaded raw_message from {0} with length {1}'.format(message_json_full_path, len(raw_message)))
+        self.log.debug('Loaded raw_message from {0} with length {1}'.format(
+            message_json_full_path,
+            len(raw_message)))
         return raw_message
 
     def __validate_message(self):
@@ -39,11 +43,15 @@ class Execute(Base):
             return steps
         except ValueError as verr:
             error_message = 'Invalid message received: ' \
-                            'Error : {0} : {1}'.format(str(verr), self.raw_message)
+                            'Error : {0} : {1}'.format(
+                                str(verr),
+                                self.raw_message)
             error_occurred = True
         except Exception as err:
             error_message = 'Invalid message received: ' \
-                            'Error : {0} : {1}'.format(str(err), self.raw_message)
+                            'Error : {0} : {1}'.format(
+                                str(err),
+                                self.raw_message)
             error_occurred = True
         finally:
             if error_occurred:
@@ -55,7 +63,8 @@ class Execute(Base):
         for step in self.steps:
             if step.get('who', None) == self.config['WHO']:
                 for script in step.get('scripts', []):
-                    script_runner = ScriptRunner(header_params=self.user_headers)
+                    script_runner = ScriptRunner(
+                        header_params=self.user_headers)
                     script_status = script_runner.execute_script(script)
                     self.log.debug(script_status)
 
