@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 export INSTALL_REQS=false
-readonly VIRTUALENV_VERSION=1.11.4
+readonly VIRTUALENV_VERSION=13.1.2
 
 ## If this script is invoked with 'install' argument
 ## then set the INSTALL_REQS flag to true
