@@ -1,4 +1,4 @@
-awscli==1.9.14
-psutil==3.2.1
+awscli==1.9.15
+psutil==3.2.2
 glob2==0.4.1
-requests==2.7.0
+requests==2.9.1

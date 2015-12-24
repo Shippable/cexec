@@ -2,6 +2,7 @@
 
 export INSTALL_REQS=false
 readonly VIRTUALENV_VERSION=13.1.2
+readonly PROGDIR=$(readlink -m $(dirname $0))
 
 ## If this script is invoked with 'install' argument
 ## then set the INSTALL_REQS flag to true
@@ -14,7 +15,6 @@ if [[ $# > 0 ]]; then
 fi
 
 update_dir() {
-  PROGDIR=$(readlink -m $(dirname $0))
   pushd $PROGDIR
 }
 
@@ -39,13 +39,14 @@ install_core_binaries() {
 }
 
 install_virtualenv() {
-  PIP=`which pip`
+  local PIP=`which pip`
+  local virtualenv_filename="virtualenv-$VIRTUALENV_VERSION.tar.gz"
   {
     echo "****** Installing virtualenv $VIRTUALENV_VERSION ********"
     if [[ ! -z "$SUDO" ]]; then
-      $SUDO $PIP install -I virtualenv==$VIRTUALENV_VERSION
+      $SUDO $PIP install -I $PROGDIR/packages/$virtualenv_filename
     else
-      $PIP install -I virtualenv==$VIRTUALENV_VERSION
+      $PIP install -I $PROGDIR/packages/$virtualenv_filename
     fi
   } || {
     wget https://raw.github.com/pypa/pip/master/contrib/get-pip.py
@@ -58,18 +59,19 @@ install_virtualenv() {
   }
 }
 
+
 install_packages() {
-  echo "Installing requirements"
+  echo "******** Installing requirements ************"
   if [[ $INSTALL_REQS == true ]]; then
     virtualenv -p `which python2.7` $HOME/shippable_ve
     source $HOME/shippable_ve/bin/activate
-    pip install -r requirements.txt
+    pip install -I -r requirements.txt
   else
     if [ -f /deps_updated.txt ]; then
       echo "Build dependencies already updated..."
     else
       echo "Build dependencies not updated, installing..."
-      pip install -r requirements.txt
+      pip install -I -r requirements.txt
     fi
   fi
 }
