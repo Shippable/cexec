@@ -9,8 +9,10 @@ class Execute(Base):
         self.user_headers = None
         self.publish_queue = None
         self.script_runner = None
-        self.raw_message = self.__load_message_from_file()
-        self.steps = self.__validate_message()
+        self.raw_message = None
+        self.steps = None
+        self.__load_message_from_file()
+        self.__validate_message()
 
     def __load_message_from_file(self):
         message_json_full_path = os.path.join(
@@ -27,7 +29,7 @@ class Execute(Base):
         self.log.debug('Loaded raw_message from {0} with length {1}'.format(
             message_json_full_path,
             len(raw_message)))
-        return raw_message
+        self.raw_message = raw_message
 
     def __validate_message(self):
         self.log.debug('Validating message')
@@ -40,7 +42,7 @@ class Execute(Base):
                 error_message = 'No "steps" property present'
                 raise Exception(error_message)
 
-            return steps
+            self.steps = steps
         except ValueError as verr:
             error_message = 'Invalid message received: ' \
                             'Error : {0} : {1}'.format(
@@ -62,9 +64,12 @@ class Execute(Base):
         self.log.debug('Inside Execute')
         for step in self.steps:
             if step.get('who', None) == self.config['WHO']:
-                for script in step.get('scripts', []):
-                    script_runner = ScriptRunner(
-                        header_params=self.user_headers)
-                    script_status = script_runner.execute_script(script)
-                    self.log.debug(script_status)
+                script = step.get('script', None)
+                if not script:
+                    error_message = 'No script to execute in step ' \
+                        ' {0}'.format(step)
+                script_runner = ScriptRunner(
+                    header_params=self.user_headers)
+                script_status = script_runner.execute_script(script)
+                self.log.debug(script_status)
 
