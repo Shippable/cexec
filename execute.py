@@ -72,4 +72,5 @@ class Execute(Base):
                     header_params=self.user_headers)
                 script_status = script_runner.execute_script(script)
                 self.log.debug(script_status)
-
+            else:
+                break
