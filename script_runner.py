@@ -1,4 +1,5 @@
 import uuid
+import os
 from base import Base
 
 class ScriptRunner(Base):
@@ -21,8 +22,17 @@ class ScriptRunner(Base):
 
     def __execute_script(self):
         self.log.debug('executing script file')
-        run_script_cmd = 'cd {0} && {1}'.format(
-            self.script_dir, self.script_name)
+        # First we need to enumerate all the files in SSH_DIR so we can
+        # assemble the ssh-add commands for all of them
+        ssh_dir = self.config['SSH_DIR']
+        ssh_add_fragment = '';
+        for file_name in os.listdir(ssh_dir):
+            file_path = os.path.join(ssh_dir, file_name)
+            ssh_add_fragment += 'ssh-add {0};'.format(file_path)
+
+        run_script_cmd = 'ssh-agent bash -c \'{0} cd {1} && {2}\''.format(
+            ssh_add_fragment, self.script_dir, self.script_name)
+
         script_status = self.command(
             run_script_cmd, self.script_dir, script=True)
         self.log.debug('Execute script completed with status: {0}'.format(

@@ -2,7 +2,7 @@
 
 ## Component specific config ##
 export COMPONENT=cexec
-export VOLUME_MOUNTS=" -v /usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/cexec:/cexec"
+export VOLUME_MOUNTS=" -v /usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/cexec:/tmp/cexec -v /tmp/ssh:/tmp/ssh"
 
 ## Generic code ##
 ## component onbox name is consistent with docker-compose naming conventions
