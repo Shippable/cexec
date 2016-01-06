@@ -134,9 +134,10 @@ class AppLogger(object):
             'console': [system_output_line],
         }
 
-        for header_param in self.header_params:
-            user_system_message['headers'][header_param] = \
-                self.header_params[header_param]
+        if self.header_params is not None:
+            for header_param in self.header_params:
+                user_system_message['headers'][header_param] = \
+                    self.header_params[header_param]
 
     def flush_console_buffer(self):
         self.log.info('Flushing console buffer to vortex')
@@ -155,9 +156,12 @@ class AppLogger(object):
                     'console' : self.console_buffer,
                 }
 
-                for header_param in self.header_params:
-                    console_message['headers'][header_param] = \
-                        self.header_params[header_param]
+                if self.header_params is not None:
+                    for header_param in self.header_params:
+                        console_message['headers'][header_param] = \
+                            self.header_params[header_param]
+
+                self.log.debug(console_message)
 
                 self.message_out.console(console_message)
 
