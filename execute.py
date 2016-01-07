@@ -12,6 +12,10 @@ class Execute(Base):
         self.raw_message = None
         self.steps = None
         self.__load_message_from_file()
+        self.script_runner_params = {
+            'BUILDER_API_TOKEN': None,
+            'JOB_ID': None
+        }
         self.__validate_message()
 
     def __load_message_from_file(self):
@@ -42,7 +46,30 @@ class Execute(Base):
                 error_message = 'No "steps" property present'
                 raise Exception(error_message)
 
+            for step in steps:
+                if not step['execOrder']:
+                    error_message = 'Missing "execOrder" property in step ' \
+                        '{0}'.format(step)
+
+            steps = sorted(steps, key=lambda step: step.get('execOrder'), reverse=False)
             self.steps = steps
+
+            builder_api_token = self.parsed_message.get('builderApiToken', None)
+
+            if builder_api_token is None:
+              error_message = 'No "builderApiToken" property present'
+              raise Exception(error_message)
+
+            self.script_runner_params['BUILDER_API_TOKEN'] = builder_api_token
+
+            job_id = self.parsed_message.get('jobId', None)
+
+            if job_id is None:
+              error_message = 'No "jobId" property present'
+              raise Exception(error_message)
+
+            self.script_runner_params['JOB_ID'] = job_id
+
         except ValueError as verr:
             error_message = 'Invalid message received: ' \
                             'Error : {0} : {1}'.format(
@@ -68,8 +95,7 @@ class Execute(Base):
                 if not script:
                     error_message = 'No script to execute in step ' \
                         ' {0}'.format(step)
-                script_runner = ScriptRunner(
-                    header_params=self.user_headers)
+                script_runner = ScriptRunner(self.script_runner_params)
                 script_status = script_runner.execute_script(script)
                 self.log.debug(script_status)
             else:

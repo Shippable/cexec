@@ -3,12 +3,12 @@ import os
 from base import Base
 
 class ScriptRunner(Base):
-    def __init__(self, header_params):
+    def __init__(self, params):
         Base.__init__(self, __name__)
         self.script_dir = self.config['HOME']
         self.script_name = '{0}/{1}.sh'.format(self.script_dir, uuid.uuid4())
-
-        self.log.init_user_logger(header_params)
+        self.config['BUILDER_API_TOKEN'] = params['BUILDER_API_TOKEN']
+        self.config['JOB_ID'] = params['JOB_ID']
 
     def execute_script(self, script):
         self.log.debug('executing script runner')

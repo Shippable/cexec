@@ -30,7 +30,6 @@ class AppLogger(object):
         self.handlers = None
         self.__setup_log(module)
         self.user_log_bytes = 0
-        self.header_params = None
 
         self.message_out = MessageOut(self.module, self.config)
 
@@ -39,12 +38,6 @@ class AppLogger(object):
 
         ## flush stdout to avoid out of order logging
         sys.stdout.flush()
-
-    def init_user_logger(self, header_params):
-        ## user params get published as-is in the message
-        ## user params should be key-value pairs
-        if type(header_params) is dict:
-            self.header_params = header_params
 
     def debug(self, message, logtype=logtype['SYSTEM']):
         self.log.debug(message)
@@ -120,24 +113,6 @@ class AppLogger(object):
             'output': message,
         }
         self.log.debug(system_output_line)
-        user_system_message = {
-            'headers' : {
-                'type' : self.logtype['GLOBAL'],
-                'level' : level,
-                'step' : self.config['STEP_NAME'],
-                'messageDate': datetime.datetime.utcnow().isoformat(),
-            },
-            'updateSequenceNumber': self.__get_timestamp(),
-            'consoleLogBytes': sys.getsizeof(message),
-            'module': self.module,
-            'timestamp': self.__get_timestamp(),
-            'console': [system_output_line],
-        }
-
-        if self.header_params is not None:
-            for header_param in self.header_params:
-                user_system_message['headers'][header_param] = \
-                    self.header_params[header_param]
 
     def flush_console_buffer(self):
         self.log.info('Flushing console buffer to vortex')
@@ -148,20 +123,9 @@ class AppLogger(object):
                 self.log.debug('Flushing {0} console logs'.format(
                     len(self.console_buffer)))
                 console_message = {
-                    'headers' : {
-                        'timestamp': self.__get_timestamp(),
-                    },
-                    'updateSequenceNumber': self.__get_timestamp(),
-                    'consoleLogBytes': self.user_log_bytes,
-                    'console' : self.console_buffer,
+                    'jobId': self.config["JOB_ID"],
+                    'jobConsoleModels': self.console_buffer
                 }
-
-                if self.header_params is not None:
-                    for header_param in self.header_params:
-                        console_message['headers'][header_param] = \
-                            self.header_params[header_param]
-
-                self.log.debug(console_message)
 
                 self.message_out.console(console_message)
 
@@ -207,7 +171,7 @@ class AppLogger(object):
             'parentConsoleId': '',
             'type': 'msg',
             'message' : output,
-            'msgTimestamp': self.__get_timestamp(),
+            'timestamp': self.__get_timestamp(),
             'completed' : True
         }
         self.console_buffer.append(console_out)
@@ -218,7 +182,7 @@ class AppLogger(object):
             'parentConsoleId': '',
             'type': 'msg',
             'message' : err,
-            'msgTimestamp': self.__get_timestamp(),
+            'timestamp': self.__get_timestamp(),
             'completed' : False
         }
         self.console_buffer.append(console_out)

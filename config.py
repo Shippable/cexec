@@ -23,7 +23,6 @@ class Config(dict):
         else:
             self['LOG_LEVEL'] = 'DEBUG'
 
-        self['SHIPPABLE_API_TOKEN'] = os.getenv('SHIPPABLE_API_TOKEN', '')
         self['SHIPPABLE_API_URL'] = os.getenv('SHIPPABLE_API_URL', '')
         self['SHIPPABLE_VORTEX_URL'] = "{0}/vortex".format(self['SHIPPABLE_API_URL'])
         self['SHIPPABLE_API_RETRY_INTERVAL'] = os.getenv('SHIPPABLE_API_RETRY_INTERVAL', '')
