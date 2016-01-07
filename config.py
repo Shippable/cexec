@@ -31,9 +31,10 @@ class Config(dict):
         self['SYSTEM_LOGGING_ENABLED'] = False
         self['USER_SYSTEM_LOGGING_ENABLED'] = True
 
-        self['MESSAGE_DIR'] = os.getenv('MESSAGE_DIR', '/cexec')
+        self['MESSAGE_DIR'] = os.getenv('MESSAGE_DIR', '/tmp/cexec')
         self['MESSAGE_JSON_NAME'] = os.getenv('MESSAGE_JSON_NAME', 'message.json')
         self['WHO'] = os.getenv('WHO', 'cexec')
+        self['SSH_DIR'] = os.getenv('SSH_DIR', '/tmp/ssh')
 
         for k, v in self.iteritems():
             if v == '':
