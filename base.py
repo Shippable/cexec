@@ -161,7 +161,7 @@ class Base(object):
                         'parentConsoleId': '',
                         'type': 'grp',
                         'message': current_group_name,
-                        'msgTimestamp': self.__get_timestamp(),
+                        'timestamp': self.__get_timestamp(),
                         'completed': False,
                         'isShown': show_group
                     }
@@ -176,7 +176,7 @@ class Base(object):
                         'parentConsoleId': parent_id,
                         'type': 'cmd',
                         'message': current_cmd_name,
-                        'msgTimestamp': self.__get_timestamp(),
+                        'timestamp': self.__get_timestamp(),
                         'completed': False
                     }
                     if parent_id:
@@ -194,7 +194,7 @@ class Base(object):
                         'parentConsoleId': parent_id,
                         'type': 'cmd',
                         'message': current_cmd_end_name,
-                        'msgTimestamp': self.__get_timestamp(),
+                        'timestamp': self.__get_timestamp(),
                         'completed': is_completed
                     }
                     if parent_id:
@@ -211,7 +211,7 @@ class Base(object):
                         'parentConsoleId': '',
                         'type': 'grp',
                         'message': current_grp_end_name,
-                        'msgTimestamp': self.__get_timestamp(),
+                        'timestamp': self.__get_timestamp(),
                         'completed': is_completed
                     }
                     self.__resolve_and_queue(console_out)
@@ -225,7 +225,7 @@ class Base(object):
                             'parentConsoleId': '',
                             'type': 'grp',
                             'message': current_group_name,
-                            'msgTimestamp': self.__get_timestamp(),
+                            'timestamp': self.__get_timestamp(),
                             'completed': False
                         }
                         self.__resolve_and_queue(console_out)
@@ -239,7 +239,7 @@ class Base(object):
                         'parentConsoleId': parent_id,
                         'type': 'msg',
                         'message': line,
-                        'msgTimestamp': self.__get_timestamp(),
+                        'timestamp': self.__get_timestamp(),
                         'completed': False
                     }
                     if parent_id:
