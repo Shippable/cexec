@@ -74,7 +74,10 @@ class Base(object):
             self.log.error(trace)
             raise Exception(error_message)
         self.log.debug('Returning command status: {0}'.format(command_status))
-        return command_status
+        return {
+            'status': command_status,
+            'exit_code': returncode
+        }
 
     def __exec_user_command(self, cmd, working_dir):
         self.log.debug('Executing streaming command {0}'.format(cmd))
@@ -120,7 +123,17 @@ class Base(object):
 
         self.log.flush_console_buffer()
 
-        return current_step_state
+        # For timeouts we want to inject our own exit code because the script
+        # hasn't returned yet
+        if current_step_state == self.STATUS['TIMEOUT']:
+            exit_code = self.STATUS['TIMEOUT']
+        else:
+            exit_code=command_thread_result['returncode']
+
+        return {
+            'status': current_step_state,
+            'exit_code': exit_code
+        }
 
     def __command_runner(self, cmd, working_dir, result):
         # pylint: disable=too-many-statements

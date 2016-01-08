@@ -89,6 +89,7 @@ class Execute(Base):
 
     def run(self):
         self.log.debug('Inside Execute')
+        exit_code = 0
         for step in self.steps:
             if step.get('who', None) == self.config['WHO']:
                 script = step.get('script', None)
@@ -98,5 +99,8 @@ class Execute(Base):
                 script_runner = ScriptRunner(self.script_runner_params)
                 script_status = script_runner.execute_script(script)
                 self.log.debug(script_status)
+                exit_code = script_status['exit_code']
             else:
                 break
+
+        return exit_code
