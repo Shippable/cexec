@@ -95,10 +95,28 @@ class Execute(Base):
                         ' {0}'.format(step)
                 script_runner = ScriptRunner(self.job_id,
                     self.shippable_adapter)
-                script_status = script_runner.execute_script(script)
+                script_status, exit_code, should_continue = script_runner.execute_script(
+                    script)
                 self.log.debug(script_status)
-                exit_code = script_status['exit_code']
+                self._report_step_status(step.get('id'), script_status)
+                if should_continue is False:
+                    break
             else:
                 break
 
         return exit_code
+
+    def _report_step_status(self, step_id, step_status):
+        self.log.debug('Inside report_job_status')
+        err, job = self.shippable_adapter.get_job_by_id(self.job_id)
+        if err is not None:
+            self.log.error('Failed to GET job_by_id: {0}'.format(self.job_id))
+            return
+
+        all_steps = job.get('steps')
+        for step in all_steps:
+            if step['id'] == step_id:
+                step['status'] = step_status
+                break;
+
+        self.shippable_adapter.put_job_by_id(self.job_id, job)

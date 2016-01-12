@@ -38,10 +38,11 @@ class ScriptRunner(Base):
         run_script_cmd = 'ssh-agent bash -c \'{0} cd {1} && {2}\''.format(
             ssh_add_fragment, self.script_dir, self.script_name)
 
-        script_status = self._run_command(run_script_cmd, self.script_dir)
+        script_status, exit_code, should_continue = self._run_command(run_script_cmd,
+            self.script_dir)
         self.log.debug('Execute script completed with status: {0}'.format(
             script_status))
-        return script_status
+        return script_status, exit_code, should_continue
 
     def __write_to_file(self, script):
         self.log.debug('Writing script to file')
@@ -67,7 +68,8 @@ class ScriptRunner(Base):
 
         command_thread_result = {
             'success': False,
-            'returncode': None
+            'returncode': None,
+            'should_continue': True
         }
 
         command_thread = threading.Thread(
@@ -86,6 +88,7 @@ class ScriptRunner(Base):
             self.log.error('Command thread is still running')
             is_command_success = False
             current_step_state = self.STATUS['TIMEOUT']
+            should_continue = False
         else:
             self.log.debug('Command completed {0}'.format(cmd))
             is_command_success = command_thread_result['success']
@@ -102,6 +105,8 @@ class ScriptRunner(Base):
                 current_step_state = self.STATUS['FAILED']
                 self.log.error(error_message)
 
+            should_continue = command_thread_result['should_continue']
+
         self.flush_console_buffer()
         # For timeouts we want to inject our own exit code because the script
         # hasn't returned yet
@@ -110,10 +115,7 @@ class ScriptRunner(Base):
         else:
             exit_code=command_thread_result['returncode']
 
-        return {
-            'status': current_step_state,
-            'exit_code': exit_code
-        }
+        return current_step_state, exit_code, should_continue
 
     def __command_runner(self, cmd, working_dir, result):
         # pylint: disable=too-many-statements
@@ -127,6 +129,7 @@ class ScriptRunner(Base):
 
         proc = None
         success = False
+        should_continue = True
         try:
             proc = subprocess.Popen(
                 cmd, shell=True,
@@ -225,6 +228,10 @@ class ScriptRunner(Base):
                     success = False
                     exception = 'Script failure tag received'
                     break
+                elif line.startswith('__SH__SHOULD_NOT_CONTINUE__'):
+                    should_continue = False
+                elif line.startswith('__SH__SHOULD_CONTINUE__'):
+                    should_continue = True
                 else:
                     parent_id = current_cmd_info.get('id') if current_cmd_info else None
                     console_out = {
@@ -246,10 +253,12 @@ class ScriptRunner(Base):
                 result['returncode'] = 99
                 result['success'] = False
                 result['exception'] = exception
+                result['should_continue'] = should_continue
             else:
                 self.log.debug('Command successful')
                 result['returncode'] = 0
                 result['success'] = True
+                result['should_continue'] = should_continue
         # pylint: disable=broad-except
         except Exception as exc:
             self.log.error('Exception while running command: {0}'.format(exc))

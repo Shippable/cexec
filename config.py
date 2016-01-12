@@ -42,6 +42,10 @@ class Config(dict):
                 raise Exception('{0} has no value. Make sure the container environment has a '
                                'variable {0} with a valid value'.format(k))
 
+        # Convert SHIPPABLE_API_RETRY_INTERVAL to an int
+        self['SHIPPABLE_API_RETRY_INTERVAL'] = int(
+            self['SHIPPABLE_API_RETRY_INTERVAL'])
+
     def __str__(self):
         for k, v in self.iteritems():
             print('{0} - {1}'.format(k, v))
