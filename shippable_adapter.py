@@ -31,6 +31,6 @@ class ShippableAdapter(Base):
                     url, error))
                 time.sleep(self.config['SHIPPABLE_API_RETRY_INTERVAL'])
 
-    def post_to_vortex(self, body):
-        url = self.api_url + '/vortex'
+    def post_job_consoles(self, job_id, body):
+        url = '{0}/jobs/{1}/postConsoles'.format(self.api_url, job_id)
         self.__post(url, body)

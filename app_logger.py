@@ -33,9 +33,6 @@ class AppLogger(object):
 
         self.message_out = MessageOut(self.module, self.config)
 
-        self.console_buffer = []
-        self.console_buffer_lock = threading.Lock()
-
         ## flush stdout to avoid out of order logging
         sys.stdout.flush()
 
@@ -93,17 +90,6 @@ class AppLogger(object):
             ## DO NOT use self.log inside this block, causes recursion
             return
 
-    def reset_console_buffer(self):
-        del self.console_buffer
-        self.console_buffer = []
-
-    def append_console_buffer(self, console_out):
-        with self.console_buffer_lock:
-            self.console_buffer.append(console_out)
-
-        if len(self.console_buffer) > self.config['CONSOLE_BUFFER_LENGTH']:
-            self.flush_console_buffer()
-
     def __publish_user_system_buffer(self, message, level):
         if not self.config['USER_SYSTEM_LOGGING_ENABLED']:
             return
@@ -113,24 +99,6 @@ class AppLogger(object):
             'output': message,
         }
         self.log.debug(system_output_line)
-
-    def flush_console_buffer(self):
-        self.log.info('Flushing console buffer to vortex')
-        if len(self.console_buffer) == 0:
-            self.log.debug('No console output to flush')
-        else:
-            with self.console_buffer_lock:
-                self.log.debug('Flushing {0} console logs'.format(
-                    len(self.console_buffer)))
-                console_message = {
-                    'jobId': self.config["JOB_ID"],
-                    'jobConsoleModels': self.console_buffer
-                }
-
-                self.message_out.console(console_message)
-
-                del self.console_buffer
-                self.console_buffer = []
 
     def __setup_log(self, module_name):
         module_name = os.path.basename(module_name)
@@ -164,25 +132,3 @@ class AppLogger(object):
     def __get_log_file_name(self, name, ext, folder):
         new_name = '{0}/{1}.{2}'.format(folder, name, ext)
         return new_name
-
-    def log_command_op(self, output):
-        console_out = {
-            'consoleId': str(uuid.uuid4()),
-            'parentConsoleId': '',
-            'type': 'msg',
-            'message' : output,
-            'timestamp': self.__get_timestamp(),
-            'completed' : True
-        }
-        self.console_buffer.append(console_out)
-
-    def log_command_err(self, err):
-        console_out = {
-            'consoleId': str(uuid.uuid4()),
-            'parentConsoleId': '',
-            'type': 'msg',
-            'message' : err,
-            'timestamp': self.__get_timestamp(),
-            'completed' : False
-        }
-        self.console_buffer.append(console_out)

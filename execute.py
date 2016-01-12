@@ -1,5 +1,6 @@
 import json
 import os
+from shippable_adapter import ShippableAdapter
 from base import Base
 from script_runner import ScriptRunner
 
@@ -12,11 +13,10 @@ class Execute(Base):
         self.raw_message = None
         self.steps = None
         self.__load_message_from_file()
-        self.script_runner_params = {
-            'BUILDER_API_TOKEN': None,
-            'JOB_ID': None
-        }
+        self.builder_api_token = None
+        self.job_id = None
         self.__validate_message()
+        self.shippable_adapter = ShippableAdapter(self.builder_api_token)
 
     def __load_message_from_file(self):
         message_json_full_path = os.path.join(
@@ -54,21 +54,18 @@ class Execute(Base):
             steps = sorted(steps, key=lambda step: step.get('execOrder'), reverse=False)
             self.steps = steps
 
-            builder_api_token = self.parsed_message.get('builderApiToken', None)
+            self.builder_api_token = self.parsed_message.get('builderApiToken',
+                None)
 
-            if builder_api_token is None:
+            if self.builder_api_token is None:
               error_message = 'No "builderApiToken" property present'
               raise Exception(error_message)
 
-            self.script_runner_params['BUILDER_API_TOKEN'] = builder_api_token
+            self.job_id = self.parsed_message.get('jobId', None)
 
-            job_id = self.parsed_message.get('jobId', None)
-
-            if job_id is None:
+            if self.job_id is None:
               error_message = 'No "jobId" property present'
               raise Exception(error_message)
-
-            self.script_runner_params['JOB_ID'] = job_id
 
         except ValueError as verr:
             error_message = 'Invalid message received: ' \
@@ -96,7 +93,8 @@ class Execute(Base):
                 if not script:
                     error_message = 'No script to execute in step ' \
                         ' {0}'.format(step)
-                script_runner = ScriptRunner(self.script_runner_params)
+                script_runner = ScriptRunner(self.job_id,
+                    self.shippable_adapter)
                 script_status = script_runner.execute_script(script)
                 self.log.debug(script_status)
                 exit_code = script_status['exit_code']
