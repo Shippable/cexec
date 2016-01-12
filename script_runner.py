@@ -293,7 +293,7 @@ class ScriptRunner(Base):
             self.flush_console_buffer()
 
     def flush_console_buffer(self):
-        self.log.info('Flushing console buffer to vortex')
+        self.log.debug('Flushing console buffer to vortex')
         if len(self.console_buffer) == 0:
             self.log.debug('No console output to flush')
         else:
