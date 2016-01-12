@@ -127,6 +127,12 @@ class AppLogger(object):
         handler.setFormatter(formatter)
         self.log.addHandler(handler)
         self.handlers = self.log.handlers
+
+        # Silence urllib3 and requests
+        if 'prod' in self.config['RUN_MODE'].lower():
+            logging.getLogger("requests").setLevel(logging.WARNING)
+            logging.getLogger("urllib3").setLevel(logging.WARNING)
+
         self.log.debug('Log Config Setup successful: {0}'.format(module_name))
 
     def __get_log_file_name(self, name, ext, folder):
