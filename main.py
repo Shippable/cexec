@@ -7,4 +7,4 @@ if __name__ == '__main__':
     print('Running CEXEC script')
     exit_code=executor.run()
     print('CEXEC has completed')
-    exit(exit_code)
+    sys.exit(exit_code)
