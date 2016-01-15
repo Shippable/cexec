@@ -158,7 +158,6 @@ class ScriptRunner(Base):
                         'type': 'grp',
                         'message': current_group_name,
                         'timestamp': self.__get_timestamp(),
-                        'completed': False,
                         'isShown': show_group
                     }
                     self.handle_console_output(console_out)
@@ -173,7 +172,6 @@ class ScriptRunner(Base):
                         'type': 'cmd',
                         'message': current_cmd_name,
                         'timestamp': self.__get_timestamp(),
-                        'completed': False
                     }
                     if parent_id:
                         self.handle_console_output(console_out)
@@ -182,16 +180,16 @@ class ScriptRunner(Base):
                     current_cmd_end_name = '|'.join(line_split[2:])
                     current_cmd_end_info = json.loads(current_cmd_end_info)
                     parent_id = current_group_info.get('id') if current_group_info else None
-                    is_completed = False
-                    if current_cmd_end_info.get('completed') == '0':
-                        is_completed = True
+                    is_success = False
+                    if current_cmd_end_info.get('exitcode') == '0':
+                        is_success = True
                     console_out = {
                         'consoleId': current_cmd_info.get('id'),
                         'parentConsoleId': parent_id,
                         'type': 'cmd',
                         'message': current_cmd_end_name,
                         'timestamp': self.__get_timestamp(),
-                        'completed': is_completed
+                        'isSuccess': is_success
                     }
                     if parent_id:
                         self.handle_console_output(console_out)
@@ -199,16 +197,16 @@ class ScriptRunner(Base):
                     current_grp_end_info = line_split[1]
                     current_grp_end_name = '|'.join(line_split[2:])
                     current_grp_end_info = json.loads(current_grp_end_info)
-                    is_completed = False
-                    if current_grp_end_info.get('completed') == '0':
-                        is_completed = True
+                    is_success = False
+                    if current_grp_end_info.get('exitcode') == '0':
+                        is_success = True
                     console_out = {
                         'consoleId': current_group_info.get('id'),
                         'parentConsoleId': '',
                         'type': 'grp',
                         'message': current_grp_end_name,
                         'timestamp': self.__get_timestamp(),
-                        'completed': is_completed
+                        'isSuccess': is_success
                     }
                     self.handle_console_output(console_out)
                 elif line.startswith('__SH__SCRIPT_END_SUCCESS__'):
@@ -222,7 +220,7 @@ class ScriptRunner(Base):
                             'type': 'grp',
                             'message': current_group_name,
                             'timestamp': self.__get_timestamp(),
-                            'completed': False
+                            'isSuccess': False
                         }
                         self.handle_console_output(console_out)
                     success = False
@@ -240,7 +238,6 @@ class ScriptRunner(Base):
                         'type': 'msg',
                         'message': line,
                         'timestamp': self.__get_timestamp(),
-                        'completed': False
                     }
                     if parent_id:
                         self.handle_console_output(console_out)
