@@ -143,6 +143,7 @@ class ScriptRunner(Base):
             current_group_name = None
             current_cmd_info = None
             for line in iter(proc.stdout.readline, ''):
+                timestamp = self.__get_timestamp()
                 self.log.debug(line)
                 line_split = line.split('|')
                 if line.startswith('__SH__GROUP__START__'):
@@ -154,10 +155,10 @@ class ScriptRunner(Base):
                         show_group = False
                     console_out = {
                         'consoleId': current_group_info.get('id'),
-                        'parentConsoleId': '',
+                        'parentConsoleId': 'root',
                         'type': 'grp',
                         'message': current_group_name,
-                        'timestamp': self.__get_timestamp(),
+                        'timestamp': timestamp,
                         'isShown': show_group
                     }
                     self.handle_console_output(console_out)
@@ -165,13 +166,14 @@ class ScriptRunner(Base):
                     current_cmd_info = line_split[1]
                     current_cmd_name = '|'.join(line_split[2:])
                     current_cmd_info = json.loads(current_cmd_info)
-                    parent_id = current_group_info.get('id') if current_group_info else None
+                    parent_id = current_group_info.get('id') if \
+                        current_group_info else None
                     console_out = {
                         'consoleId': current_cmd_info.get('id'),
                         'parentConsoleId': parent_id,
                         'type': 'cmd',
                         'message': current_cmd_name,
-                        'timestamp': self.__get_timestamp(),
+                        'timestamp': timestamp,
                     }
                     if parent_id:
                         self.handle_console_output(console_out)
@@ -179,7 +181,8 @@ class ScriptRunner(Base):
                     current_cmd_end_info = line_split[1]
                     current_cmd_end_name = '|'.join(line_split[2:])
                     current_cmd_end_info = json.loads(current_cmd_end_info)
-                    parent_id = current_group_info.get('id') if current_group_info else None
+                    parent_id = current_group_info.get('id') if \
+                        current_group_info else None
                     is_success = False
                     if current_cmd_end_info.get('exitcode') == '0':
                         is_success = True
@@ -188,7 +191,8 @@ class ScriptRunner(Base):
                         'parentConsoleId': parent_id,
                         'type': 'cmd',
                         'message': current_cmd_end_name,
-                        'timestamp': self.__get_timestamp(),
+                        'timestamp': timestamp,
+                        'timestampEndedAt': timestamp,
                         'isSuccess': is_success
                     }
                     if parent_id:
@@ -202,10 +206,11 @@ class ScriptRunner(Base):
                         is_success = True
                     console_out = {
                         'consoleId': current_group_info.get('id'),
-                        'parentConsoleId': '',
+                        'parentConsoleId': 'root',
                         'type': 'grp',
                         'message': current_grp_end_name,
-                        'timestamp': self.__get_timestamp(),
+                        'timestamp': timestamp,
+                        'timestampEndedAt': timestamp,
                         'isSuccess': is_success
                     }
                     self.handle_console_output(console_out)
@@ -213,16 +218,6 @@ class ScriptRunner(Base):
                     success = True
                     break
                 elif line.startswith('__SH__SCRIPT_END_FAILURE__'):
-                    if current_group_info:
-                        console_out = {
-                            'consoleId': current_group_info.get('id'),
-                            'parentConsoleId': '',
-                            'type': 'grp',
-                            'message': current_group_name,
-                            'timestamp': self.__get_timestamp(),
-                            'isSuccess': False
-                        }
-                        self.handle_console_output(console_out)
                     success = False
                     exception = 'Script failure tag received'
                     break
@@ -231,13 +226,14 @@ class ScriptRunner(Base):
                 elif line.startswith('__SH__SHOULD_CONTINUE__'):
                     should_continue = True
                 else:
-                    parent_id = current_cmd_info.get('id') if current_cmd_info else None
+                    parent_id = current_cmd_info.get('id') if \
+                        current_cmd_info else None
                     console_out = {
                         'consoleId': str(uuid.uuid4()),
                         'parentConsoleId': parent_id,
                         'type': 'msg',
                         'message': line,
-                        'timestamp': self.__get_timestamp(),
+                        'timestamp': timestamp,
                     }
                     if parent_id:
                         self.handle_console_output(console_out)
