@@ -15,6 +15,7 @@ class Execute(Base):
         self.__load_message_from_file()
         self.builder_api_token = None
         self.job_id = None
+        self.parsed_message = None
         self.__validate_message()
         self.shippable_adapter = ShippableAdapter(self.builder_api_token)
 
@@ -51,21 +52,22 @@ class Execute(Base):
                     error_message = 'Missing "execOrder" property in step ' \
                         '{0}'.format(step)
 
-            steps = sorted(steps, key=lambda step: step.get('execOrder'), reverse=False)
+            steps = sorted(steps, key=lambda step: step.get('execOrder'), \
+                reverse=False)
             self.steps = steps
 
             self.builder_api_token = self.parsed_message.get('builderApiToken',
                 None)
 
             if self.builder_api_token is None:
-              error_message = 'No "builderApiToken" property present'
-              raise Exception(error_message)
+                error_message = 'No "builderApiToken" property present'
+                raise Exception(error_message)
 
             self.job_id = self.parsed_message.get('jobId', None)
 
             if self.job_id is None:
-              error_message = 'No "jobId" property present'
-              raise Exception(error_message)
+                error_message = 'No "jobId" property present'
+                raise Exception(error_message)
 
         except ValueError as verr:
             error_message = 'Invalid message received: ' \
@@ -93,10 +95,13 @@ class Execute(Base):
                 if not script:
                     error_message = 'No script to execute in step ' \
                         ' {0}'.format(step)
+                    raise Exception(error_message)
+                self._report_step_status(step.get('id'), \
+                    self.STATUS['PROCESSING'])
                 script_runner = ScriptRunner(self.job_id,
                     self.shippable_adapter)
-                script_status, exit_code, should_continue = script_runner.execute_script(
-                    script)
+                script_status, exit_code, should_continue = \
+                    script_runner.execute_script(script)
                 self.log.debug(script_status)
                 self._report_step_status(step.get('id'), script_status)
                 if should_continue is False:
@@ -117,6 +122,6 @@ class Execute(Base):
         for step in all_steps:
             if step['id'] == step_id:
                 step['status'] = step_status
-                break;
+                break
 
         self.shippable_adapter.put_job_by_id(self.job_id, job)
