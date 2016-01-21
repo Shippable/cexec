@@ -79,7 +79,7 @@ class ScriptRunner(Base):
 
         command_thread.start()
 
-        console_flush_thread = threading.Thread(target=self.__trigger_flush_console_output)
+        console_flush_thread = threading.Timer(self.config['TIME_INTERVAL'], self.__trigger_flush_console_output)
         console_flush_thread.start()
 
         self.log.debug('Waiting for command thread to complete')
