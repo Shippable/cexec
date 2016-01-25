@@ -79,7 +79,8 @@ class ScriptRunner(Base):
 
         command_thread.start()
 
-        console_flush_thread = threading.Timer(self.config['TIME_INTERVAL'], self.__trigger_flush_console_output)
+        console_flush_thread = threading.Timer(self.config['TIME_INTERVAL'],
+            self.__trigger_flush_console_output)
         console_flush_thread.start()
 
         self.log.debug('Waiting for command thread to complete')
@@ -278,7 +279,8 @@ class ScriptRunner(Base):
           return
 
         self.flush_console_buffer()
-        t = threading.Timer(self.config['TIME_INTERVAL'], self.__trigger_flush_console_output)
+        t = threading.Timer(self.config['TIME_INTERVAL'],
+            self.__trigger_flush_console_output)
         t.start()
 
     def append_command_err(self, err):
