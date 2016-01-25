@@ -17,6 +17,7 @@ class ScriptRunner(Base):
         self.shippable_adapter = shippable_adapter;
         self.console_buffer = []
         self.console_buffer_lock = threading.Lock()
+        self.continue_trigger_flush_console_output = True
 
     def execute_script(self, script):
         self.log.debug('executing script runner')
@@ -78,6 +79,10 @@ class ScriptRunner(Base):
 
         command_thread.start()
 
+        console_flush_thread = threading.Timer(self.config['TIME_INTERVAL'],
+            self.__trigger_flush_console_output)
+        console_flush_thread.start()
+
         self.log.debug('Waiting for command thread to complete')
         command_thread.join(self.config['MAX_COMMAND_SECONDS'])
         self.log.debug('Command thread join has returned. Result: {0}'\
@@ -106,6 +111,8 @@ class ScriptRunner(Base):
                 self.log.error(error_message)
 
             should_continue = command_thread_result['should_continue']
+
+        self.continue_trigger_flush_console_output = False
 
         self.flush_console_buffer()
         # For timeouts we want to inject our own exit code because the script
@@ -266,6 +273,15 @@ class ScriptRunner(Base):
     def __get_timestamp(self):
         # pylint: disable=no-self-use
         return int(time.time() * 1000000)
+
+    def __trigger_flush_console_output(self):
+        if not self.continue_trigger_flush_console_output:
+          return
+
+        self.flush_console_buffer()
+        t = threading.Timer(self.config['TIME_INTERVAL'],
+            self.__trigger_flush_console_output)
+        t.start()
 
     def append_command_err(self, err):
         console_out = {
