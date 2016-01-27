@@ -14,7 +14,7 @@ class Config(dict):
         self['MAX_COMMAND_SECONDS'] = 60 * 30
         self['MAX_USER_LOG_SIZE'] = 12 * 1024 * 1024
         self['CONSOLE_BUFFER_LENGTH'] = 20
-        self['TIME_INTERVAL'] = 3
+        self['CONSOLE_FLUSH_INTERVAL'] = 3
 
         self['RUN_MODE'] = os.getenv('RUN_MODE', 'PROD')
         if 'prod' in self['RUN_MODE'].lower():
