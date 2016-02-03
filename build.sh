@@ -15,6 +15,11 @@ update_perms() {
   $SUDO chown -R $USER:$USER /home/shippable/build
 }
 
+update_path() {
+  export PATH=$PATH:$PROGDIR/dist
+  echo PATH=$PATH:$PROGDIR/dist | sudo tee -a /etc/environment
+}
+
 update_ssh_config() {
   mkdir -p $HOME/.ssh
   touch $HOME/.ssh/config
@@ -33,6 +38,7 @@ run_build() {
 main() {
   update_dir
   update_perms
+  update_path
   update_ssh_config
   update_build_dirs
   run_build
