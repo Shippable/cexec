@@ -16,8 +16,8 @@ update_perms() {
 }
 
 update_path() {
-  export PATH=$PATH:$PROGDIR/dist
-  echo PATH=$PATH:$PROGDIR/dist | sudo tee -a /etc/environment
+  export PATH=$PATH:$PROGDIR/bin
+  echo PATH=$PATH:$PROGDIR/bin | sudo tee -a /etc/environment
 }
 
 update_ssh_config() {
