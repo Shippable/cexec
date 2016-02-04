@@ -101,5 +101,5 @@ class ShippableAdapter(Base):
         self.__post(url, body)
 
     def post_coverage_results(self, body):
-        url = '{0}/jobTestReports'.format(self.api_url)
+        url = '{0}/jobCoverageReports'.format(self.api_url)
         self.__post(url, body)
