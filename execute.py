@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 from shippable_adapter import ShippableAdapter
 from base import Base
 from script_runner import ScriptRunner
@@ -91,6 +92,11 @@ class Execute(Base):
     def run(self):
         self.log.debug('Inside Execute')
         exit_code = 0
+
+        exit_code = self._check_for_ssh_agent()
+        if exit_code > 0:
+            return exit_code
+
         for step in self.steps:
             if step.get('who', None) == self.config['WHO']:
                 script = step.get('script', None)
@@ -149,6 +155,12 @@ class Execute(Base):
         coverage_results = json.loads(coverage_results)
         coverage_results['jobId'] = self.job_id
         self.shippable_adapter.post_coverage_results(coverage_results)
+
+    def _check_for_ssh_agent(self):
+        self.log.debug('Inside Execute')
+        p = subprocess.Popen('ssh-agent', shell=True)
+        p.communicate()
+        return p.returncode
 
     def _report_step_status(self, step_id, step_status):
         self.log.debug('Inside report_job_status')
