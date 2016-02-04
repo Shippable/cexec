@@ -157,7 +157,7 @@ class Execute(Base):
         self.shippable_adapter.post_coverage_results(coverage_results)
 
     def _check_for_ssh_agent(self):
-        self.log.debug('Inside Execute')
+        self.log.debug('Inside _check_for_ssh_agent')
         p = subprocess.Popen('ssh-agent', shell=True)
         p.communicate()
         return p.returncode
