@@ -112,6 +112,7 @@ class Execute(Base):
                 break
 
         self._push_test_results()
+        self._push_coverage_results()
 
         return exit_code
 
@@ -134,6 +135,20 @@ class Execute(Base):
 
     def _push_coverage_results(self):
         self.log.debug('Inside _push_coverage_results')
+        coverage_results_file = '{0}/coverageresults/{1}'.format(
+            self.config['ARTIFACTS_DIR'],
+            self.coverage_results_file)
+        if os.path.exists(coverage_results_file):
+            self.log.debug('Coverage results exist, reading file')
+
+        coverage_results = ''
+        with open(coverage_results_file, 'r') as results_file:
+            coverage_results = results_file.read()
+
+        self.log.debug('Successfully read coverage results, parsing')
+        coverage_results = json.loads(coverage_results)
+        coverage_results['jobId'] = self.job_id
+        self.shippable_adapter.post_coverage_results(coverage_results)
 
     def _report_step_status(self, step_id, step_status):
         self.log.debug('Inside report_job_status')
