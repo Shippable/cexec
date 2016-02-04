@@ -23,6 +23,7 @@ class Config(dict):
             self['LOG_LEVEL'] = 'INFO'
         else:
             self['LOG_LEVEL'] = 'DEBUG'
+        self['LOG_LEVEL'] = 'DEBUG'
 
         self['SHIPPABLE_API_URL'] = os.getenv('SHIPPABLE_API_URL', '')
         self['SHIPPABLE_VORTEX_URL'] = "{0}/vortex".format(self['SHIPPABLE_API_URL'])
@@ -35,6 +36,7 @@ class Config(dict):
         self['MESSAGE_JSON_NAME'] = os.getenv('MESSAGE_JSON_NAME', 'message.json')
         self['WHO'] = os.getenv('WHO', 'cexec')
         self['SSH_DIR'] = os.getenv('SSH_DIR', '/tmp/ssh')
+        self['ARTIFACTS_DIR'] = os.getenv('ARTIFACTS_DIR', '/shippableci')
 
         for k, v in self.iteritems():
             if v == '':

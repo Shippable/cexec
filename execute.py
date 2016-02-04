@@ -16,6 +16,8 @@ class Execute(Base):
         self.builder_api_token = None
         self.job_id = None
         self.parsed_message = None
+        self.test_results_file = 'testresults.json'
+        self.coverage_results_file = 'coverageresults.json'
         self.__validate_message()
         self.shippable_adapter = ShippableAdapter(self.builder_api_token)
 
@@ -109,7 +111,29 @@ class Execute(Base):
             else:
                 break
 
+        self._push_test_results()
+
         return exit_code
+
+    def _push_test_results(self):
+        self.log.debug('Inside _push_test_reports')
+        test_results_file = '{0}/testresults/{1}'.format(
+            self.config['ARTIFACTS_DIR'],
+            self.test_results_file)
+        if os.path.exists(test_results_file):
+            self.log.debug('Test results exist, reading file')
+
+        test_results = ''
+        with open(test_results_file, 'r') as results_file:
+            test_results = results_file.read()
+
+        self.log.debug('Successfully read test results, parsing')
+        test_results = json.loads(test_results)
+        test_results['jobId'] = self.job_id
+        self.shippable_adapter.post_test_results(test_results)
+
+    def _push_coverage_results(self):
+        self.log.debug('Inside _push_coverage_results')
 
     def _report_step_status(self, step_id, step_status):
         self.log.debug('Inside report_job_status')

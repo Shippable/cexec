@@ -95,3 +95,11 @@ class ShippableAdapter(Base):
     def put_job_by_id(self, job_id, job):
       url = '{0}/jobs/{1}'.format(self.api_url, job_id)
       self.__put(url, job)
+
+    def post_test_results(self, body):
+        url = '{0}/jobTestReports'.format(self.api_url)
+        self.__post(url, body)
+
+    def post_coverage_results(self, body):
+        url = '{0}/jobTestReports'.format(self.api_url)
+        self.__post(url, body)
