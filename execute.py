@@ -162,7 +162,8 @@ class Execute(Base):
 
     def _check_for_ssh_agent(self):
         self.log.debug('Inside _check_for_ssh_agent')
-        p = subprocess.Popen('ssh-agent', shell=True)
+        devnull = open(os.devnull, 'wb')
+        p = subprocess.Popen('ssh-agent', shell=True, stdout=devnull)
         p.communicate()
         return p.returncode
 
