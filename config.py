@@ -23,7 +23,6 @@ class Config(dict):
             self['LOG_LEVEL'] = 'INFO'
         else:
             self['LOG_LEVEL'] = 'DEBUG'
-        self['LOG_LEVEL'] = 'DEBUG'
 
         self['SHIPPABLE_API_URL'] = os.getenv('SHIPPABLE_API_URL', '')
         self['SHIPPABLE_VORTEX_URL'] = "{0}/vortex".format(self['SHIPPABLE_API_URL'])
