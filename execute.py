@@ -124,14 +124,16 @@ class Execute(Base):
         if os.path.exists(test_results_file):
             self.log.debug('Test results exist, reading file')
 
-        test_results = ''
-        with open(test_results_file, 'r') as results_file:
-            test_results = results_file.read()
+            test_results = ''
+            with open(test_results_file, 'r') as results_file:
+                test_results = results_file.read()
+            self.log.debug('Successfully read test results, parsing')
+            test_results = json.loads(test_results)
+            test_results['jobId'] = self.job_id
+            self.shippable_adapter.post_test_results(test_results)
+        else:
+            self.log.debug('No test results exist, skipping')
 
-        self.log.debug('Successfully read test results, parsing')
-        test_results = json.loads(test_results)
-        test_results['jobId'] = self.job_id
-        self.shippable_adapter.post_test_results(test_results)
 
     def _push_coverage_results(self):
         self.log.debug('Inside _push_coverage_results')
@@ -141,14 +143,16 @@ class Execute(Base):
         if os.path.exists(coverage_results_file):
             self.log.debug('Coverage results exist, reading file')
 
-        coverage_results = ''
-        with open(coverage_results_file, 'r') as results_file:
-            coverage_results = results_file.read()
+            coverage_results = ''
+            with open(coverage_results_file, 'r') as results_file:
+                coverage_results = results_file.read()
 
-        self.log.debug('Successfully read coverage results, parsing')
-        coverage_results = json.loads(coverage_results)
-        coverage_results['jobId'] = self.job_id
-        self.shippable_adapter.post_coverage_results(coverage_results)
+            self.log.debug('Successfully read coverage results, parsing')
+            coverage_results = json.loads(coverage_results)
+            coverage_results['jobId'] = self.job_id
+            self.shippable_adapter.post_coverage_results(coverage_results)
+        else:
+            self.log.debug('No coverage results exist,skipping')
 
     def _report_step_status(self, step_id, step_status):
         self.log.debug('Inside report_job_status')
