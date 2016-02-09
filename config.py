@@ -11,7 +11,6 @@ class Config(dict):
         self['HOME'] = os.getenv('HOME', '/root')
 
         self['USER_BUFFER_TIMEOUT'] = 2
-        self['MAX_COMMAND_SECONDS'] = 60 * 30
         self['MAX_USER_LOG_SIZE'] = 12 * 1024 * 1024
         self['CONSOLE_BUFFER_LENGTH'] = 20
         self['CONSOLE_FLUSH_INTERVAL'] = 3
