@@ -105,7 +105,7 @@ class Execute(Base):
                         ' {0}'.format(step)
                     raise Exception(error_message)
                 self._report_step_status(step.get('id'), \
-                    self.STATUS['PROCESSING'], True)
+                    self.STATUS['PROCESSING'], None)
                 script_runner = ScriptRunner(self.job_id,
                     self.shippable_adapter)
                 script_status, exit_code, should_continue = \
