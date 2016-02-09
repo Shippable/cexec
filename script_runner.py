@@ -85,7 +85,7 @@ class ScriptRunner(Base):
         console_flush_timer.start()
 
         self.log.debug('Waiting for command thread to complete')
-        command_thread.join(self.config['MAX_COMMAND_SECONDS'])
+        command_thread.join()
         self.log.debug('Command thread join has returned. Result: {0}'\
                 .format(command_thread_result))
 
