@@ -1,4 +1,4 @@
-import sys
+import os
 from execute import Execute
 
 if __name__ == '__main__':
@@ -7,4 +7,4 @@ if __name__ == '__main__':
     print('Running CEXEC script')
     exit_code=executor.run()
     print('CEXEC has completed')
-    sys.exit(exit_code)
+    os._exit(exit_code)
