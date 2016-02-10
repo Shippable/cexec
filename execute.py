@@ -105,13 +105,14 @@ class Execute(Base):
                         ' {0}'.format(step)
                     raise Exception(error_message)
                 self._report_step_status(step.get('id'), \
-                    self.STATUS['PROCESSING'])
+                    self.STATUS['PROCESSING'], None)
                 script_runner = ScriptRunner(self.job_id,
                     self.shippable_adapter)
                 script_status, exit_code, should_continue = \
                     script_runner.execute_script(script)
                 self.log.debug(script_status)
-                self._report_step_status(step.get('id'), script_status)
+                self._report_step_status(step.get('id'), \
+                    script_status, should_continue)
                 if should_continue is False:
                     break
             else:
@@ -167,7 +168,7 @@ class Execute(Base):
         p.communicate()
         return p.returncode
 
-    def _report_step_status(self, step_id, step_status):
+    def _report_step_status(self, step_id, step_status, should_continue):
         self.log.debug('Inside report_job_status')
         err, job = self.shippable_adapter.get_job_by_id(self.job_id)
         if err is not None:
@@ -178,6 +179,7 @@ class Execute(Base):
         for step in all_steps:
             if step['id'] == step_id:
                 step['status'] = step_status
+                step['shouldContinue'] = should_continue
                 break
 
         self.shippable_adapter.put_job_by_id(self.job_id, job)
