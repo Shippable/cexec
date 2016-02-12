@@ -122,8 +122,8 @@ class Execute(Base):
         return self.exit_code
 
     def _update_exit_code(self, new_exit_code):
-	    if self.exit_code is 0:
-		    self.exit_code = new_exit_code
+        if self.exit_code is 0:
+            self.exit_code = new_exit_code
 
     def _push_test_results(self):
         self.log.debug('Inside _push_test_reports')
