@@ -21,6 +21,7 @@ class Execute(Base):
         self.coverage_results_file = 'coverageresults.json'
         self.__validate_message()
         self.shippable_adapter = ShippableAdapter(self.builder_api_token)
+        self.exit_code = 0
 
     def __load_message_from_file(self):
         message_json_full_path = os.path.join(
@@ -104,15 +105,12 @@ class Execute(Base):
                     error_message = 'No script to execute in step ' \
                         ' {0}'.format(step)
                     raise Exception(error_message)
-                self._report_step_status(step.get('id'), \
-                    self.STATUS['PROCESSING'], None)
                 script_runner = ScriptRunner(self.job_id,
                     self.shippable_adapter)
-                script_status, exit_code, should_continue = \
+                script_status, script_exit_code, should_continue = \
                     script_runner.execute_script(script)
+                self._update_exit_code(script_exit_code)
                 self.log.debug(script_status)
-                self._report_step_status(step.get('id'), \
-                    script_status, should_continue)
                 if should_continue is False:
                     break
             else:
@@ -121,7 +119,11 @@ class Execute(Base):
         self._push_test_results()
         self._push_coverage_results()
 
-        return exit_code
+        return self.exit_code
+
+    def _update_exit_code(self, new_exit_code):
+        if self.exit_code is 0:
+            self.exit_code = new_exit_code
 
     def _push_test_results(self):
         self.log.debug('Inside _push_test_reports')
@@ -167,19 +169,3 @@ class Execute(Base):
         p = subprocess.Popen('ssh-agent', shell=True, stdout=devnull)
         p.communicate()
         return p.returncode
-
-    def _report_step_status(self, step_id, step_status, should_continue):
-        self.log.debug('Inside report_job_status')
-        err, job = self.shippable_adapter.get_job_by_id(self.job_id)
-        if err is not None:
-            self.log.error('Failed to GET job_by_id: {0}'.format(self.job_id))
-            return
-
-        all_steps = job.get('steps')
-        for step in all_steps:
-            if step['id'] == step_id:
-                step['status'] = step_status
-                step['shouldContinue'] = should_continue
-                break
-
-        self.shippable_adapter.put_job_by_id(self.job_id, job)
