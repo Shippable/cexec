@@ -1,9 +1,6 @@
 import sys
-import uuid
 import time
-import datetime
 import os
-import threading
 import logging
 import logging.handlers
 from message_out import MessageOut
@@ -28,6 +25,7 @@ class AppLogger(object):
         self.config = config
         self.module = module
         self.handlers = None
+        self.log = None
         self.__setup_log(module)
         self.user_log_bytes = 0
 
@@ -104,28 +102,13 @@ class AppLogger(object):
         module_name = os.path.basename(module_name)
         module_name = module_name.split('.')[0]
 
-        project_root = os.path.split(
-            os.path.normpath(os.path.abspath(__file__)))[0]
-        log_dir = (project_root + '/logs').replace('//', '/')
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
         logger_name = self.module
-        log_file = self.__get_log_file_name(logger_name, 'log', log_dir)
-        with open(log_file, 'a'):
-            os.utime(log_file, None)
 
         log_module_name = '{0} - {1}'.format(logger_name, module_name)
         self.log = logging.getLogger(log_module_name)
         self.log.setLevel(self.config['LOG_LEVEL'])
 
         self.log.propagate = True
-        handler = logging.handlers.RotatingFileHandler(
-            log_file, maxBytes=10000000, backupCount=2)
-        handler.setLevel(self.config['LOG_LEVEL'])
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-        self.log.addHandler(handler)
         self.handlers = self.log.handlers
 
         # Silence urllib3 and requests
@@ -134,7 +117,3 @@ class AppLogger(object):
             logging.getLogger("urllib3").setLevel(logging.WARNING)
 
         self.log.debug('Log Config Setup successful: {0}'.format(module_name))
-
-    def __get_log_file_name(self, name, ext, folder):
-        new_name = '{0}/{1}.{2}'.format(folder, name, ext)
-        return new_name
