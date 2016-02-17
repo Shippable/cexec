@@ -2,22 +2,23 @@
 
 readonly PROGDIR=$(readlink -m $(dirname $0))
 readonly ARTIFACTS_DIR="/shippableci"
+readonly SUDO=`which sudo`
 
 update_dir() {
   cd $PROGDIR
 }
 
 update_perms() {
-  SUDO=`which sudo`
-  $SUDO mkdir -p /home/shippable/build/logs
   $SUDO mkdir -p /shippableci
-  $SUDO chown -R $USER:$USER /home/shippable/build/logs
-  $SUDO chown -R $USER:$USER /home/shippable/build
+  $SUDO chown -R $USER:$USER /shippableci
+
+  $SUDO mkdir -p /tmp/ssh
+  $SUDO chown -R $USER:$USER /tmp/ssh
 }
 
 update_path() {
   export PATH=$PATH:$PROGDIR/bin
-  echo PATH=$PATH:$PROGDIR/bin >> /etc/environment
+  echo PATH=$PATH:$PROGDIR/bin | $SUDO tee -a /etc/environment
 }
 
 update_ssh_config() {
