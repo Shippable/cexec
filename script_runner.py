@@ -14,7 +14,7 @@ class ScriptRunner(Base):
         self.script_dir = self.config['HOME']
         self.script_name = '{0}/{1}.sh'.format(self.script_dir, uuid.uuid4())
         self.job_id = job_id
-        self.shippable_adapter = shippable_adapter;
+        self.shippable_adapter = shippable_adapter
         self.console_buffer = []
         self.console_buffer_lock = threading.Lock()
         self.continue_trigger_flush_console_output = True
@@ -31,7 +31,7 @@ class ScriptRunner(Base):
         # First we need to enumerate all the files in SSH_DIR so we can
         # assemble the ssh-add commands for all of them
         ssh_dir = self.config['SSH_DIR']
-        ssh_add_fragment = '';
+        ssh_add_fragment = ''
         for file_name in os.listdir(ssh_dir):
             file_path = os.path.join(ssh_dir, file_name)
             ssh_add_fragment += 'ssh-add {0};'.format(file_path)
@@ -39,8 +39,8 @@ class ScriptRunner(Base):
         run_script_cmd = 'ssh-agent bash -c \'{0} cd {1} && {2}\''.format(
             ssh_add_fragment, self.script_dir, self.script_name)
 
-        script_status, exit_code, should_continue = self._run_command(run_script_cmd,
-            self.script_dir)
+        script_status, exit_code, should_continue = self._run_command(
+            run_script_cmd, self.script_dir)
         self.log.debug('Execute script completed with status: {0}'.format(
             script_status))
         return script_status, exit_code, should_continue
@@ -51,12 +51,12 @@ class ScriptRunner(Base):
             os.mkdir(self.script_dir)
 
         script_file = open(self.script_name, 'w')
-        script_file.write(script)
+        script_file.write(script.encode('UTF-8'))
         script_file.close()
 
         # Make it executable
         script_stat = os.stat(self.script_name)
-        os.chmod(self.script_name, script_stat.st_mode | stat.S_IEXEC);
+        os.chmod(self.script_name, script_stat.st_mode | stat.S_IEXEC)
 
         self.log.debug('Executing file')
         with open(self.script_name) as script_file:
@@ -90,7 +90,7 @@ class ScriptRunner(Base):
                 .format(command_thread_result))
 
         if command_thread.is_alive():
-            self.log.append_command_err('Command timed out')
+            self.append_command_err('Command timed out')
             self.log.error('Command thread is still running')
             is_command_success = False
             current_step_state = self.STATUS['TIMEOUT']
@@ -121,7 +121,7 @@ class ScriptRunner(Base):
         if current_step_state == self.STATUS['TIMEOUT']:
             exit_code = self.STATUS['TIMEOUT']
         else:
-            exit_code=command_thread_result['returncode']
+            exit_code = command_thread_result['returncode']
 
         return current_step_state, exit_code, should_continue
 
