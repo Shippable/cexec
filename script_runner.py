@@ -220,7 +220,8 @@ class ScriptRunner(Base):
                         'message': current_grp_end_name,
                         'timestamp': timestamp,
                         'timestampEndedAt': timestamp,
-                        'isSuccess': is_success
+                        'isSuccess': is_success,
+                        'isShown': show_group
                     }
                     self.handle_console_output(console_out)
                 elif line.startswith('__SH__SCRIPT_END_SUCCESS__'):
