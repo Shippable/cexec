@@ -137,9 +137,15 @@ class Execute(Base):
             with open(test_results_file, 'r') as results_file:
                 test_results = results_file.read()
             self.log.debug('Successfully read test results, parsing')
-            test_results = json.loads(test_results)
-            test_results['jobId'] = self.job_id
-            self.shippable_adapter.post_test_results(test_results)
+            try:
+                test_results = json.loads(test_results)
+                test_results['jobId'] = self.job_id
+            except ValueError as err:
+                test_results = None
+                self.log.error(
+                    'Error parsing test results: {0}'.format(str(err)))
+            if test_results is not None:
+                self.shippable_adapter.post_test_results(test_results)
         else:
             self.log.debug('No test results exist, skipping')
 
@@ -157,9 +163,15 @@ class Execute(Base):
                 coverage_results = results_file.read()
 
             self.log.debug('Successfully read coverage results, parsing')
-            coverage_results = json.loads(coverage_results)
-            coverage_results['jobId'] = self.job_id
-            self.shippable_adapter.post_coverage_results(coverage_results)
+            try:
+                coverage_results = json.loads(coverage_results)
+                coverage_results['jobId'] = self.job_id
+            except ValueError as err:
+                coverage_results = None
+                self.log.error(
+                    'Error parsing coverage results: {0}'.format(str(err)))
+            if coverage_results is not None:
+                self.shippable_adapter.post_coverage_results(coverage_results)
         else:
             self.log.debug('No coverage results exist,skipping')
 
