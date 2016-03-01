@@ -4,6 +4,54 @@ readonly PROGDIR=$(readlink -m $(dirname $0))
 readonly ARTIFACTS_DIR="/shippableci"
 readonly SUDO=`which sudo`
 
+check_git() {
+  echo "Looking for git..."
+  {
+    GIT=$(which git)
+  } || {
+    echo "Could not find git. Installing git-core..."
+  }
+
+  if [ -z "$GIT" ]; then
+    $SUDO apt-get install -y git-core
+    echo "Installed git-core"
+  else
+    echo "Found git at $GIT"
+  fi
+}
+
+check_ssh_agent() {
+  echo "Looking for ssh-agent"
+  {
+    SSH_AGENT=$(which ssh-agent)
+  } || {
+    echo "Could not find ssh-agent. Installing..."
+  }
+
+  if [ -z "$SSH_AGENT" ]; then
+    $SUDO apt-get install -y openssh-client
+    echo "Installed openssh-client"
+  else
+    echo "Found ssh-agent at $SSH_AGENT"
+  fi
+}
+
+check_python() {
+  echo "Looking for python..."
+  {
+    PYTHON=$(which python)
+  } || {
+    echo "Could not find python. Installing..."
+  }
+
+  if [ -z "$PYTHON" ]; then
+    $SUDO apt-get install -y python
+    echo "Installed python"
+  else
+    echo "Found python at $PYTHON"
+  fi
+}
+
 update_dir() {
   cd $PROGDIR
 }
@@ -37,6 +85,9 @@ run_build() {
 }
 
 main() {
+  check_git
+  check_ssh_agent
+  check_python
   update_dir
   update_perms
   update_path
