@@ -2,18 +2,43 @@
 
 readonly PROGDIR=$(readlink -m $(dirname $0))
 readonly ARTIFACTS_DIR="/shippableci"
-readonly SUDO=`which sudo`
+IS_APT_UPDATED=false
+
+update_apt() {
+  if [ "$IS_APT_UPDATED" == true ]; then return; fi
+  $SUDO apt-get update
+  IS_APT_UPDATED=true
+}
+
+check_sudo() {
+  echo "Looking for sudo..."
+  {
+    SUDO=$(which sudo)
+  } || {
+    echo "Could not find sudo. Installing..."
+  }
+
+  if [ -z "$SUDO" ]; then
+    update_apt
+    apt-get install -y sudo
+    echo "Installed sudo"
+    SUDO=$(which sudo)
+  else
+    echo "Found sudo at $SUDO"
+  fi
+}
 
 check_git() {
   echo "Looking for git..."
   {
     GIT=$(which git)
   } || {
-    echo "Could not find git. Installing git-core..."
+    echo "Could not find git. Installing git..."
   }
 
   if [ -z "$GIT" ]; then
-    $SUDO apt-get install -y git-core
+    update_apt
+    $SUDO apt-get install -y git
     echo "Installed git-core"
   else
     echo "Found git at $GIT"
@@ -29,6 +54,7 @@ check_ssh_agent() {
   }
 
   if [ -z "$SSH_AGENT" ]; then
+    update_apt
     $SUDO apt-get install -y openssh-client
     echo "Installed openssh-client"
   else
@@ -45,6 +71,7 @@ check_python() {
   }
 
   if [ -z "$PYTHON" ]; then
+    update_apt
     $SUDO apt-get install -y python
     echo "Installed python"
   else
@@ -85,6 +112,7 @@ run_build() {
 }
 
 main() {
+  check_sudo
   check_git
   check_ssh_agent
   check_python
