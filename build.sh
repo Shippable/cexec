@@ -1,7 +1,6 @@
 #!/bin/bash -e
 
 readonly PROGDIR=$(readlink -m $(dirname $0))
-readonly ARTIFACTS_DIR="/shippableci"
 IS_APT_UPDATED=false
 
 update_apt() {
@@ -103,10 +102,6 @@ update_ssh_config() {
   echo -e "\nHost *\n\tStrictHostKeyChecking no" >> $HOME/.ssh/config
 }
 
-update_build_dirs() {
-  mkdir -p $ARTIFACTS_DIR
-}
-
 run_build() {
   /home/shippable/cexec/dist/main/main
 }
@@ -120,7 +115,6 @@ main() {
   update_perms
   update_path
   update_ssh_config
-  update_build_dirs
   run_build
 }
 
