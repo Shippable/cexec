@@ -32,7 +32,9 @@ class ScriptRunner(Base):
         # assemble the ssh-add commands for all of them
         ssh_dir = self.config['SSH_DIR']
         ssh_add_fragment = ''
-        for file_name in os.listdir(ssh_dir):
+        key_files = os.listdir(ssh_dir)
+        key_files.sort()
+        for file_name in key_files:
             file_path = os.path.join(ssh_dir, file_name)
             ssh_add_fragment += 'ssh-add {0};'.format(file_path)
 
