@@ -2,14 +2,42 @@
 
 readonly PROGDIR=$(readlink -m $(dirname $0))
 IS_APT_UPDATED=false
+IS_UBUNTU=false
+
+warn_config() {
+  echo "********************************************************************"
+  echo "*                           WARNING                                *"
+  echo "*                                                                  *"
+  echo "* You are not running Ubuntu. This configuration is not supported. *"
+  echo "*                                                                  *"
+  echo "********************************************************************"
+}
+
+check_ubuntu() {
+  IS_UBUNTU=false
+  {
+    LSB_RELEASE=$(lsb_release -a)
+    echo $LSB_RELEASE | grep Ubuntu
+    if [ "$?" == 0 ]; then
+      IS_UBUNTU=true
+      echo "Ubuntu confirmed"
+    else
+      warn_config
+    fi
+  } || {
+    warn_config
+  }
+}
 
 update_apt() {
+  if [ "$IS_UBUNTU" == false ]; then return; fi
   if [ "$IS_APT_UPDATED" == true ]; then return; fi
   $SUDO apt-get update
   IS_APT_UPDATED=true
 }
 
 check_sudo() {
+  if [ "$IS_UBUNTU" == false ]; then return; fi
   echo "Looking for sudo..."
   {
     SUDO=$(which sudo)
@@ -28,6 +56,7 @@ check_sudo() {
 }
 
 check_git() {
+  if [ "$IS_UBUNTU" == false ]; then return; fi
   echo "Looking for git..."
   {
     GIT=$(which git)
@@ -45,6 +74,7 @@ check_git() {
 }
 
 check_ssh_agent() {
+  if [ "$IS_UBUNTU" == false ]; then return; fi
   echo "Looking for ssh-agent"
   {
     SSH_AGENT=$(which ssh-agent)
@@ -62,6 +92,7 @@ check_ssh_agent() {
 }
 
 check_python() {
+  if [ "$IS_UBUNTU" == false ]; then return; fi
   echo "Looking for python..."
   {
     PYTHON=$(which python)
@@ -107,6 +138,7 @@ run_build() {
 }
 
 main() {
+  check_ubuntu
   check_sudo
   check_git
   check_ssh_agent
