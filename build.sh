@@ -3,6 +3,7 @@
 readonly PROGDIR=$(readlink -m $(dirname $0))
 IS_APT_UPDATED=false
 IS_UBUNTU=false
+HAS_APT_GET=false
 
 warn_config() {
   echo "********************************************************************"
@@ -29,15 +30,29 @@ check_ubuntu() {
   }
 }
 
+check_apt_get() {
+  {
+    echo "Looking for apt-get..."
+    APT_GET=$(which apt-get)
+  } || {
+    HAS_APT_GET=false
+    echo "Could not find apt-get. Missing build system dependencies will not be automatically installed."
+  }
+  if [ ! -z "$APT_GET" ]; then
+    HAS_APT_GET=true
+    echo "Found apt-get at $APT_GET"
+  fi
+}
+
 update_apt() {
-  if [ "$IS_UBUNTU" == false ]; then return; fi
+  if [ "$HAS_APT_GET" == false ]; then return; fi
   if [ "$IS_APT_UPDATED" == true ]; then return; fi
   $SUDO apt-get update
   IS_APT_UPDATED=true
 }
 
 check_sudo() {
-  if [ "$IS_UBUNTU" == false ]; then return; fi
+  if [ "$HAS_APT_GET" == false ]; then return; fi
   echo "Looking for sudo..."
   {
     SUDO=$(which sudo)
@@ -56,7 +71,7 @@ check_sudo() {
 }
 
 check_git() {
-  if [ "$IS_UBUNTU" == false ]; then return; fi
+  if [ "$HAS_APT_GET" == false  ]; then return; fi
   echo "Looking for git..."
   {
     GIT=$(which git)
@@ -74,7 +89,7 @@ check_git() {
 }
 
 check_ssh_agent() {
-  if [ "$IS_UBUNTU" == false ]; then return; fi
+  if [ "$HAS_APT_GET" == false ]; then return; fi
   echo "Looking for ssh-agent"
   {
     SSH_AGENT=$(which ssh-agent)
@@ -92,7 +107,7 @@ check_ssh_agent() {
 }
 
 check_python() {
-  if [ "$IS_UBUNTU" == false ]; then return; fi
+  if [ "$HAS_APT_GET" == false ]; then return; fi
   echo "Looking for python..."
   {
     PYTHON=$(which python)
@@ -139,6 +154,7 @@ run_build() {
 
 main() {
   check_ubuntu
+  check_apt_get
   check_sudo
   check_git
   check_ssh_agent
