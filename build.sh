@@ -130,10 +130,10 @@ update_dir() {
 
 update_perms() {
   $SUDO mkdir -p /shippableci
-  $SUDO chown -R $USER:$USER /shippableci
+  $SUDO chown -R root:root /shippableci
 
   $SUDO mkdir -p /tmp/ssh
-  $SUDO chown -R $USER:$USER /tmp/ssh
+  $SUDO chown -R root:root /tmp/ssh
 }
 
 update_path() {
