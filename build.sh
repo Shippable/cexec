@@ -149,6 +149,13 @@ update_ssh_config() {
   echo -e "\nHost *\n\tStrictHostKeyChecking no" >> $HOME/.ssh/config
 }
 
+check_uuid_binary(){
+  if [ ! -f "/proc/sys/kernel/random/uuid" ]; then
+    echo "/proc/sys/kernel/random/uuid was not found. Are you using a linux-based image?"
+    exit 1
+  fi
+}
+
 run_build() {
   /home/shippable/cexec/dist/main/main
 }
@@ -164,6 +171,7 @@ main() {
   update_perms
   update_path
   update_ssh_config
+  check_uuid_binary
   run_build
 }
 
