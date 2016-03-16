@@ -129,11 +129,12 @@ update_dir() {
 }
 
 update_perms() {
+  local build_user=$(whoami)
   $SUDO mkdir -p /shippableci
-  $SUDO chown -R root:root /shippableci
+  $SUDO chown -R $build_user:$build_user /shippableci
 
   $SUDO mkdir -p /tmp/ssh
-  $SUDO chown -R root:root /tmp/ssh
+  $SUDO chown -R $build_user:$build_user /tmp/ssh
 }
 
 update_path() {
