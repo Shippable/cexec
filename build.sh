@@ -137,9 +137,8 @@ update_perms() {
   $SUDO chown -R $build_user:$build_user /tmp/ssh
 }
 
-update_path() {
-  export PATH=$PATH:$PROGDIR/bin
-  echo PATH=$PATH:$PROGDIR/bin | $SUDO tee -a /etc/environment
+copy_bin_dir() {
+  cp $PROGDIR/bin/* /usr/local/bin/
 }
 
 update_ssh_config() {
@@ -169,7 +168,7 @@ main() {
   check_python
   update_dir
   update_perms
-  update_path
+  copy_bin_dir
   update_ssh_config
   check_uuid_binary
   run_build
