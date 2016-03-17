@@ -138,7 +138,7 @@ update_perms() {
 }
 
 copy_bin_dir() {
-  cp $PROGDIR/bin/* /usr/local/bin/
+  $SUDO cp $PROGDIR/bin/* /usr/local/bin/
 }
 
 update_ssh_config() {
