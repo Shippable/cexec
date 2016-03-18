@@ -5,6 +5,7 @@ import requests
 
 class MessageOut(object):
     def __init__(self, module, config):
+        requests.packages.urllib3.disable_warnings()
         self.log = None
         self.module = module
         self.config = config
