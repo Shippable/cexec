@@ -135,6 +135,7 @@ update_perms() {
 
   $SUDO mkdir -p /tmp/ssh
   $SUDO chown -R $build_user:$build_user /tmp/ssh
+  $SUDO chown -R $build_user:$build_user /home/shippable/cache
 }
 
 copy_bin_dir() {
