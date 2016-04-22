@@ -79,13 +79,13 @@ class ShippableAdapter(Base):
         }
         while True:
             try:
+                err = None
                 response = requests.put(
                     url,
                     data=json.dumps(body),
                     headers=headers)
                 self.log.debug('PUT {0} completed with {1}'.format(
                     url, response.status_code))
-                res_obj = json.loads(response.text)
                 if response.status_code >= 500:
                     # API server error, we must retry
                     err_msg = 'API server error: {0} {1}'.format(
@@ -93,6 +93,7 @@ class ShippableAdapter(Base):
                     raise Exception(err_msg)
                 elif response.status_code is not 200:
                     err = response.status_code
+                res_obj = json.loads(response.text)
                 return err, res_obj
             except Exception as exc:
                 trace = traceback.format_exc()
