@@ -118,12 +118,47 @@ class Execute(Base):
 
         self._push_test_results()
         self._push_coverage_results()
+        self._push_post_job_envs()
 
         return self.exit_code
 
     def _update_exit_code(self, new_exit_code):
         if self.exit_code is 0:
             self.exit_code = new_exit_code
+
+    def _push_post_job_envs(self):
+        self.log.debug('Inside _push_post_job_envs')
+        job_env_dir = '{0}/postjobenvs/'.format(
+            self.config['ARTIFACTS_DIR'])
+
+        if os.path.exists(job_env_dir):
+            self.log.debug('postJobEnvs exist, reading dir')
+
+            err, job = self.shippable_adapter.get_job_by_id(self.job_id)
+            if err is not None:
+                self.log.error('Failed to GET job_by_id: {0}, {1}'.format(
+                    self.job_id, err))
+                return
+
+            env_results = []
+            for filename in os.listdir(job_env_dir):
+                if filename.endswith(".json"):
+                    f = open(os.path.join(job_env_dir, filename), "r")
+                    try:
+                        env_json = json.loads(f.read())
+                    except ValueError as err:
+                        env_json = None
+                        self.log.error(
+                            'Error posting job envs: {0}'.format(str(err)))
+                    if env_json is not None:
+                        env_results.append(env_json)
+
+            if env_results:
+                job['postJobEnvs'] = env_results
+
+            self.shippable_adapter.put_job_by_id(self.job_id, job)
+        else:
+            self.log.debug('No postJobEnvs exist, skipping')
 
     def _push_test_results(self):
         self.log.debug('Inside _push_test_reports')
