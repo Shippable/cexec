@@ -142,15 +142,16 @@ class Execute(Base):
 
             env_results = []
             for filename in os.listdir(job_env_dir):
-                f = open(os.path.join(job_env_dir, filename), "r")
-                try:
-                    env_json = json.loads(f.read())
-                except ValueError as err:
-                    env_json = None
-                    self.log.error(
-                        'Error posting job envs: {0}'.format(str(err)))
-                if env_json is not None:
-                    env_results.append(env_json)
+                if filename.endswith(".json"):
+                    f = open(os.path.join(job_env_dir, filename), "r")
+                    try:
+                        env_json = json.loads(f.read())
+                    except ValueError as err:
+                        env_json = None
+                        self.log.error(
+                            'Error posting job envs: {0}'.format(str(err)))
+                    if env_json is not None:
+                        env_results.append(env_json)
 
             if env_results:
                 job['postJobEnvs'] = env_results
