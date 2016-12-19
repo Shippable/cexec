@@ -42,6 +42,15 @@ class ShippableAdapter(Base):
 
     def __post(self, url, body):
         self.log.debug('POST {0}'.format(url))
+        try:
+            data = json.dumps(body)
+        except Exception as exc:
+            trace = traceback.format_exc()
+            error = '{0}: {1}'.format(str(exc), trace)
+            self.log.error('POST {0} failed with error: {1}'.format(
+                url, error))
+            return True, error
+
         headers = {
             'Authorization': 'apiToken {0}'.format(self.api_token),
             'Content-Type': 'application/json'
@@ -51,7 +60,7 @@ class ShippableAdapter(Base):
                 err = None
                 response = requests.post(
                     url,
-                    data=json.dumps(body),
+                    data=data,
                     headers=headers)
                 self.log.debug('POST {0} completed with {1}'.format(
                     url, response.status_code))
@@ -73,6 +82,15 @@ class ShippableAdapter(Base):
 
     def __put(self, url, body):
         self.log.debug('PUT {0}'.format(url))
+        try:
+            data = json.dumps(body)
+        except Exception as exc:
+            trace = traceback.format_exc()
+            error = '{0}: {1}'.format(str(exc), trace)
+            self.log.error('PUT {0} failed with error: {1}'.format(
+                url, error))
+            return True, error
+
         headers = {
             'Authorization': 'apiToken {0}'.format(self.api_token),
             'Content-Type': 'application/json'
@@ -82,7 +100,7 @@ class ShippableAdapter(Base):
                 err = None
                 response = requests.put(
                     url,
-                    data=json.dumps(body),
+                    data=data,
                     headers=headers)
                 self.log.debug('PUT {0} completed with {1}'.format(
                     url, response.status_code))
