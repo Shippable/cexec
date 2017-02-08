@@ -93,6 +93,8 @@ class Execute(Base):
     def run(self):
         self.log.debug('Inside Execute')
         exit_code = 0
+        flushed_consoles_size_in_bytes = 0
+        sent_console_truncated_message = False
 
         exit_code = self._check_for_ssh_agent()
         if exit_code > 0:
@@ -106,8 +108,11 @@ class Execute(Base):
                         ' {0}'.format(step)
                     raise Exception(error_message)
                 script_runner = ScriptRunner(self.job_id,
-                    self.shippable_adapter)
-                script_status, script_exit_code, should_continue = \
+                    self.shippable_adapter, flushed_consoles_size_in_bytes,
+                    sent_console_truncated_message)
+                script_status, script_exit_code, should_continue, \
+                    flushed_consoles_size_in_bytes, \
+                    sent_console_truncated_message = \
                     script_runner.execute_script(script)
                 self._update_exit_code(script_exit_code)
                 self.log.debug(script_status)
