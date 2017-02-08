@@ -9,7 +9,8 @@ import traceback
 from base import Base
 
 class ScriptRunner(Base):
-    def __init__(self, job_id, shippable_adapter):
+    def __init__(self, job_id, shippable_adapter, \
+        flushed_consoles_size_in_bytes, sent_console_truncated_message):
         Base.__init__(self, __name__)
         self.script_dir = self.config['HOME']
         self.script_name = '{0}/{1}.sh'.format(self.script_dir, uuid.uuid4())
@@ -18,6 +19,9 @@ class ScriptRunner(Base):
         self.console_buffer = []
         self.console_buffer_lock = threading.Lock()
         self.continue_trigger_flush_console_output = True
+        self.max_consoles_size_in_bytes = 64 * 1024 * 1024  # 64 MB
+        self.flushed_consoles_size_in_bytes = flushed_consoles_size_in_bytes
+        self.sent_console_truncated_message = sent_console_truncated_message
 
     def execute_script(self, script):
         self.log.debug('executing script runner')
@@ -45,7 +49,9 @@ class ScriptRunner(Base):
             run_script_cmd, self.script_dir)
         self.log.debug('Execute script completed with status: {0}'.format(
             script_status))
-        return script_status, exit_code, should_continue
+        return script_status, exit_code, should_continue, \
+            self.flushed_consoles_size_in_bytes, \
+            self.sent_console_truncated_message
 
     def __write_to_file(self, script):
         self.log.debug('Writing script to file')
@@ -317,19 +323,59 @@ class ScriptRunner(Base):
             self.flush_console_buffer()
 
     def flush_console_buffer(self):
-        self.log.debug('Flushing console buffer to vortex')
         if len(self.console_buffer) == 0:
             self.log.debug('No console output to flush')
         else:
             with self.console_buffer_lock:
-                self.log.debug('Flushing {0} console logs'.format(
-                    len(self.console_buffer)))
-                req_body = {
-                    'jobId': self.job_id,
-                    'jobConsoleModels': self.console_buffer
-                }
+                for console in self.console_buffer:
+                    self.flushed_consoles_size_in_bytes += \
+                        len(console['message'])
 
-                self.shippable_adapter.post_job_consoles(self.job_id, req_body)
+                logs_exceed_limit = self.flushed_consoles_size_in_bytes > \
+                    self.max_consoles_size_in_bytes
+                if logs_exceed_limit and \
+                    not self.sent_console_truncated_message:
+            		self.send_console_truncated_message()
+            		self.sent_console_truncated_message = True
+                elif not self.sent_console_truncated_message:
+            		self.log.debug('Flushing {0} console logs'.format(
+                        len(self.console_buffer)))
+            		req_body = {
+                        'jobId': self.job_id,
+                        'jobConsoleModels': self.console_buffer
+            		}
+            		self.shippable_adapter.post_job_consoles(self.job_id,
+                        req_body)
 
                 del self.console_buffer
                 self.console_buffer = []
+
+    def send_console_truncated_message(self):
+        self.log.debug('Flushing final {0} MB limit message'.format(
+            self.max_consoles_size_in_bytes / (1024 * 1024)))
+
+        fatal_grp = {
+            'consoleId': str(uuid.uuid4()),
+            'parentConsoleId': 'root',
+            'type': 'grp',
+            'message': 'console_limit_error',
+            'timestamp': int(time.time() * 1000000),
+            'isSuccess': False
+        }
+
+        fatal_msg = {
+            'consoleId': str(uuid.uuid4()),
+            'parentConsoleId': fatal_grp['consoleId'],
+            'type': 'msg',
+            'message': 'Console size exceeds {0} MB limit. Truncated from \
+                here.'.format(self.max_consoles_size_in_bytes / (1024 * 1024)),
+            'timestamp': int(time.time() * 1000000),
+            'isSuccess': False
+        }
+
+        console = {
+            'jobId': self.job_id,
+            'jobConsoleModels': [fatal_grp, fatal_msg]
+        }
+
+        self.shippable_adapter.post_job_consoles(self.job_id, console)
