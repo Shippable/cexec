@@ -66,10 +66,6 @@ class ScriptRunner(Base):
         script_stat = os.stat(self.script_name)
         os.chmod(self.script_name, script_stat.st_mode | stat.S_IEXEC)
 
-        self.log.debug('Executing file')
-        with open(self.script_name) as script_file:
-            self.log.debug(script_file.read())
-
     def _run_command(self, cmd, working_dir):
         self.log.debug('Executing streaming command: {0}\nDir: {1}'.format(
             cmd, working_dir))
