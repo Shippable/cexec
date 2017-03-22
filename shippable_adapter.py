@@ -45,11 +45,29 @@ class ShippableAdapter(Base):
         try:
             data = json.dumps(body)
         except Exception as exc:
-            trace = traceback.format_exc()
-            error = '{0}: {1}'.format(str(exc), trace)
-            self.log.error('POST {0} failed with error: {1}'.format(
-                url, error))
-            return True, error
+            # if there is an error, test each console line and
+            # replace the bad line with an error message
+            new_job_console_models = []
+            for console in body['jobConsoleModels']:
+                try:
+                    test_console = json.dumps(console)
+                    new_job_console_models.append(console)
+                except Exception as test_console_exc:
+                    test_console_trace = traceback.format_exc()
+                    test_console_error = '{0}: {1}'.format(\
+                        str(test_console_exc), test_console_trace)
+                    console['message'] = 'Failed to parse console log' \
+                            ' with error: {0}'.format(test_console_error)
+                    new_job_console_models.append(console)
+            try:
+                body['jobConsoleModels'] = new_job_console_models
+                data = json.dumps(body)
+            except Exception as new_job_console_models_exc:
+                trace = traceback.format_exc()
+                error = '{0}: {1}'.format(str(new_job_console_models_exc), trace)
+                self.log.error('POST {0} failed with error: {1}'.format(
+                    url, error))
+                return True, error
 
         headers = {
             'Authorization': 'apiToken {0}'.format(self.api_token),
