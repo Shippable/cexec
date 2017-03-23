@@ -250,14 +250,6 @@ class ScriptRunner(Base):
                         'timestamp': timestamp,
                     }
 
-                    try:
-                        data = json.dumps(console_out)
-                    except Exception as exc:
-                        trace = traceback.format_exc()
-                        error = '{0}: {1}'.format(str(exc), trace)
-                        console_out['message'] = 'Failed to parse console log' \
-                            ' with error: {0}'.format(error)
-
                     if parent_id:
                         self.handle_console_output(console_out)
                     else:
