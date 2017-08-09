@@ -35,6 +35,9 @@ class Config(dict):
         self['WHO'] = os.getenv('WHO', 'cexec')
         self['SSH_DIR'] = os.getenv('SSH_DIR', '/tmp/ssh')
         self['ARTIFACTS_DIR'] = os.getenv('ARTIFACTS_DIR', '/shippableci')
+        self['MAX_CONSOLES_SIZE_MB'] = os.getenv('MAX_CONSOLES_SIZE_MB', 16)
+        self['MAX_CONSOLES_SIZE_BYTES'] = self['MAX_CONSOLES_SIZE_MB'] * 1024 * 1024
+
 
         for k, v in self.iteritems():
             if v == '':
@@ -51,3 +54,4 @@ class Config(dict):
         for k, v in self.iteritems():
             print('{0} - {1}'.format(k, v))
         return ''
+
