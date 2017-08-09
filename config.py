@@ -35,7 +35,7 @@ class Config(dict):
         self['WHO'] = os.getenv('WHO', 'cexec')
         self['SSH_DIR'] = os.getenv('SSH_DIR', '/tmp/ssh')
         self['ARTIFACTS_DIR'] = os.getenv('ARTIFACTS_DIR', '/shippableci')
-        self['MAX_CONSOLES_SIZE_MB'] = os.getenv('MAX_CONSOLES_SIZE_MB')
+        self['MAX_CONSOLES_SIZE_MB'] = os.getenv('MAX_CONSOLES_SIZE_MB', 16)
 
 
         for k, v in self.iteritems():
