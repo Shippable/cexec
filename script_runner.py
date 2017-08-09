@@ -19,7 +19,7 @@ class ScriptRunner(Base):
         self.console_buffer = []
         self.console_buffer_lock = threading.Lock()
         self.continue_trigger_flush_console_output = True
-        self.max_consoles_size_in_bytes = self.config['MAX_CONSOLES_SIZE_MB'] * 1024 * 1024
+        self.max_consoles_size_in_bytes = self.config['MAX_CONSOLES_SIZE_BYTES']
         self.flushed_consoles_size_in_bytes = flushed_consoles_size_in_bytes
         self.sent_console_truncated_message = sent_console_truncated_message
 
@@ -367,3 +367,4 @@ class ScriptRunner(Base):
         }
 
         self.shippable_adapter.post_job_consoles(self.job_id, console)
+
