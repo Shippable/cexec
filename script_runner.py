@@ -19,7 +19,11 @@ class ScriptRunner(Base):
         self.console_buffer = []
         self.console_buffer_lock = threading.Lock()
         self.continue_trigger_flush_console_output = True
-        self.max_consoles_size_in_bytes = 64 * 1024 * 1024  # 64 MB
+        self.max_consoles_size_MB = self.config['MAX_CONSOLES_SIZE_MB']
+        if self.max_consoles_size_MB:
+            self.max_consoles_size_in_bytes = self.max_consoles_size_MB * 1024 * 1024
+        else:
+            self.max_consoles_size_in_bytes = 16 * 1024 * 1024 #16 MB
         self.flushed_consoles_size_in_bytes = flushed_consoles_size_in_bytes
         self.sent_console_truncated_message = sent_console_truncated_message
 
