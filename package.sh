@@ -10,8 +10,17 @@ init_ve() {
 }
 
 package() {
-  sudo rm -r dist
-  pyinstaller --clean --hidden-import=requests main.py
+  local arch=$(uname -m)
+  if [ "$arch" == "x86_64" ]; then
+    if [ -d dist/main ]; then
+      sudo rm -r dist/main
+    fi
+    pyinstaller --clean --hidden-import=requests main.py
+  fi
+  if [ -d dist/$arch/linux ]; then
+    sudo rm -r dist/$arch/linux
+  fi
+  pyinstaller --distpath dist/$arch/linux --clean --hidden-import=requests main.py
 }
 
 main() {
