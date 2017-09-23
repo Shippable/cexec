@@ -11,16 +11,13 @@ init_ve() {
 
 package() {
   local arch=$(uname -m)
-  if [ "$arch" == "x86_64" ]; then
-    if [ -d dist/main ]; then
-      sudo rm -r dist/main
-    fi
-    pyinstaller --clean --hidden-import=requests main.py
-  fi
-  if [ -d dist/$arch/linux ]; then
-    sudo rm -r dist/$arch/linux
-  fi
+  sudo rm -r dist/$arch/linux || true
   pyinstaller --distpath dist/$arch/linux --clean --hidden-import=requests main.py
+  if [ "$arch" == "x86_64" ]; then
+    sudo rm -r dist/main || true
+    mkdir -p dist/main
+    sudo cp -rf dist/$arch/linux/main/. dist/main/
+  fi
 }
 
 main() {
@@ -29,3 +26,4 @@ main() {
 }
 
 main
+
