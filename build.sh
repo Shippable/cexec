@@ -157,7 +157,20 @@ check_uuid_binary(){
 }
 
 run_build() {
-  /home/shippable/cexec/dist/main/main
+  local use_default_arch=true
+  if [ ! -z "$SHIPPABLE_NODE_ARCHITECTURE" ]; then
+    if [ -f /home/shippable/cexec/dist/"$SHIPPABLE_NODE_ARCHITECTURE"/linux/main/main ]; then
+      use_default_arch=false
+    else
+      echo "cexec binary not present in $SHIPPABLE_NODE_ARCHITECTURE folder..."
+    fi
+  fi
+  if [ "$use_default_arch" == true ]; then
+    echo "Running build using the default, x86_64, binary..."
+    /home/shippable/cexec/dist/main/main
+  else
+    /home/shippable/cexec/dist/"$SHIPPABLE_NODE_ARCHITECTURE"/linux/main/main
+  fi
 }
 
 main() {
@@ -176,3 +189,4 @@ main() {
 }
 
 main
+
