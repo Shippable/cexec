@@ -3,9 +3,13 @@
 readonly VE_LOCATION=/tmp/cexec_pkg_ve
 
 init_ve() {
+  local arch=$(uname -m)
   virtualenv -p /usr/bin/python $VE_LOCATION
   source $VE_LOCATION/bin/activate
-  pip install pyinstaller
+  # TODO: remove this check once pyinstaller 3.4 is released
+  if [ "$arch" != "aarch64" ]; then
+    pip install pyinstaller
+  fi
   pip install -r requirements.txt
 }
 
