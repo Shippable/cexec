@@ -8,7 +8,7 @@ init_ve() {
   source $VE_LOCATION/bin/activate
   # TODO: remove this check once pyinstaller 3.4 is released
   if [ "$arch" != "aarch64" ]; then
-    pip install pyinstaller
+    pip install pyinstaller==3.3
   fi
   pip install -r requirements.txt
 }
