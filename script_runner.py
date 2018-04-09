@@ -143,11 +143,14 @@ class ScriptRunner(Base):
         success = False
         should_continue = True
         try:
+            # Unset LD_LIBRARY_PATH
+            env = dict(os.environ)
+            env.pop('LD_LIBRARY_PATH', None)
             proc = subprocess.Popen(
                 cmd, shell=True,
                 stdout=subprocess.PIPE,
                 cwd=working_dir,
-                env=os.environ.copy(),
+                env=env,
                 universal_newlines=True)
 
             exception = 'Invalid or no script tags received'
@@ -367,4 +370,3 @@ class ScriptRunner(Base):
         }
 
         self.shippable_adapter.post_job_consoles(self.job_id, console)
-
