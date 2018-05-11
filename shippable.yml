@@ -1,96 +1,96 @@
-#resources:
-#  - name: cexec_sh_repo
-#    type: gitRepo
-#    integration: avinci_gh
-#    versionTemplate:
-#      sourceName: shippable/cexec
-#      branch: master
-#
-#jobs:
-#  - name: cexec_file_pack
-#    type: runSh
-#    triggerMode: parallel
-#    dependencyMode: strict
-#    steps:
-#      - IN: cexec_sh_repo
-#      - IN: shipit_bits_access_cli
-#        switch: off
-#      - TASK:
-#          name: cexec_pack
-#          runtime:
-#            options:
-#              env:
-#                - ARTIFACTS_BUCKET: "s3://shippable-artifacts/cexec"
-#                - REL_VER: "master"
-#                - RES_REPO: "cexec_sh_repo"
-#                - CONTEXT: "cexec"
-#          script:
-#            - REPO_COMMIT=$(shipctl get_resource_version_key "$RES_REPO" "shaData.commitSha")
-#            - BINARY_TAR="$CONTEXT-$REL_VER-$ARCHITECTURE-$OS.tar.gz"
-#            - ARTIFACT_TAR="/tmp/$CONTEXT-$REL_VER.tar.gz"
-#            - S3_BUCKET_BINARY_DIR="$ARTIFACTS_BUCKET/$REL_VER/"
-#            - pushd $(shipctl get_resource_state "$RES_REPO")
-#            - git archive --format=tar.gz --output=$ARTIFACT_TAR --prefix=$CONTEXT/ $REL_VER
-#            - aws s3 cp --acl public-read "$ARTIFACT_TAR" "$S3_BUCKET_BINARY_DIR"
-#    on_success:
-#      script:
-#        - shipctl put_resource_state_multi $JOB_NAME "versionName=$REPO_COMMIT" "FILE_REPO_COMMIT_SHA=$REPO_COMMIT" "S3_BUCKET=$S3_BUCKET_BINARY_DIR" "S3_FILENAME=$ARTIFACT_TAR"
-#
-#  - name: cexec_repo_file_tag
-#    type: runSh
-#    triggerMode: parallel
-#    dependencyMode: strict
-#    steps:
-#      - IN: prod_release
-#      - IN: cexec_file_pack
-#        switch: off
-#      - IN: cexec_sh_repo
-#        switch: off
-#      - IN: shipit_bits_access_cli
-#        switch: off
-#      - IN: shipit_gh_ssh
-#        switch: off
-#      - TASK:
-#          name: cexec_tag
-#          runtime:
-#            options:
-#              env:
-#                - RES_VER: "prod_release"
-#                - ARTIFACTS_BUCKET: "s3://shippable-artifacts/cexec"
-#                - CONTEXT: "cexec"
-#                - RES_REPO: "cexec_sh_repo"
-#                - RES_FILE: "cexec_file_pack"
-#                - GIT_PATH: "git@github.com:Shippable/cexec.git"
-#          script:
-#            - REL_VER=$(shipctl get_resource_version_key "$RES_VER" "versionName")
-#            - |
-#               REPO_COMMIT=$(shipctl get_resource_version_key "$RES_FILE" "FILE_REPO_COMMIT_SHA")
-#               TAR_FILE_NAME=$(shipctl get_resource_version_key "$RES_FILE" "S3_FILENAME")
-#               FILE_BUCKET=$(shipctl get_resource_version_key "$RES_FILE" "S3_BUCKET")
-#            - |
-#               S3_BUCKET_FROM_PATH="$FILE_BUCKET""$TAR_FILE_NAME"
-#               S3_BUCKET_TO_PATH="$ARTIFACTS_BUCKET/$REL_VER/$CONTEXT-$REL_VER.tar.gz"
-#               aws s3 cp --acl public-read "$S3_BUCKET_FROM_PATH" "$S3_BUCKET_TO_PATH"
-#            - |
-#               pushd $(shipctl get_resource_meta "shipit_gh_ssh")
-#                 shipctl get_json_value integration.json 'privateKey' > gh_ssh.key
-#                 chmod 600 gh_ssh.key
-#                 ssh-add gh_ssh.key
-#               popd
-#            - pushd $(shipctl get_resource_state "$RES_REPO")
-#            - |
-#               git remote add up $GIT_PATH
-#               git remote -v
-#               git checkout master
-#            - |
-#               git pull --tags
-#               if git tag -d $REL_VER; then
-#                 git push --delete up $REL_VER
-#               fi
-#            - |
-#               git checkout $REPO_COMMIT
-#               git tag $REL_VER
-#               git push up $REL_VER
-#    on_success:
-#      script:
-#        - shipctl put_resource_state_multi $JOB_NAME "versionName=$REL_VER" "TAG_COMMIT_SHA=$REPO_COMMIT" "S3_FILENAME=$S3_BUCKET_TO_PATH"
+resources:
+  - name: cexec_sh_repo1
+    type: gitRepo
+    integration: avinci_gh
+    versionTemplate:
+      sourceName: shippable/cexec
+      branch: master
+
+jobs:
+  - name: cexec_file_pack
+    type: runSh
+    triggerMode: parallel
+    dependencyMode: strict
+    steps:
+      - IN: cexec_sh_repo1
+      - IN: shipit_bits_access_cli
+        switch: off
+      - TASK:
+          name: cexec_pack
+          runtime:
+            options:
+              env:
+                - ARTIFACTS_BUCKET: "s3://shippable-artifacts/cexec"
+                - REL_VER: "master"
+                - RES_REPO: "cexec_sh_repo"
+                - CONTEXT: "cexec"
+          script:
+            - REPO_COMMIT=$(shipctl get_resource_version_key "$RES_REPO" "shaData.commitSha")
+            - BINARY_TAR="$CONTEXT-$REL_VER-$ARCHITECTURE-$OS.tar.gz"
+            - ARTIFACT_TAR="/tmp/$CONTEXT-$REL_VER.tar.gz"
+            - S3_BUCKET_BINARY_DIR="$ARTIFACTS_BUCKET/$REL_VER/"
+            - pushd $(shipctl get_resource_state "$RES_REPO")
+            - git archive --format=tar.gz --output=$ARTIFACT_TAR --prefix=$CONTEXT/ $REL_VER
+            - aws s3 cp --acl public-read "$ARTIFACT_TAR" "$S3_BUCKET_BINARY_DIR"
+    on_success:
+      script:
+        - shipctl put_resource_state_multi $JOB_NAME "versionName=$REPO_COMMIT" "FILE_REPO_COMMIT_SHA=$REPO_COMMIT" "S3_BUCKET=$S3_BUCKET_BINARY_DIR" "S3_FILENAME=$ARTIFACT_TAR"
+
+  - name: cexec_repo_file_tag
+    type: runSh
+    triggerMode: parallel
+    dependencyMode: strict
+    steps:
+      - IN: prod_release
+      - IN: cexec_file_pack
+        switch: off
+      - IN: cexec_sh_repo1
+        switch: off
+      - IN: shipit_bits_access_cli
+        switch: off
+      - IN: shipit_gh_ssh
+        switch: off
+      - TASK:
+          name: cexec_tag
+          runtime:
+            options:
+              env:
+                - RES_VER: "prod_release"
+                - ARTIFACTS_BUCKET: "s3://shippable-artifacts/cexec"
+                - CONTEXT: "cexec"
+                - RES_REPO: "cexec_sh_repo"
+                - RES_FILE: "cexec_file_pack"
+                - GIT_PATH: "git@github.com:Shippable/cexec.git"
+          script:
+            - REL_VER=$(shipctl get_resource_version_key "$RES_VER" "versionName")
+            - |
+               REPO_COMMIT=$(shipctl get_resource_version_key "$RES_FILE" "FILE_REPO_COMMIT_SHA")
+               TAR_FILE_NAME=$(shipctl get_resource_version_key "$RES_FILE" "S3_FILENAME")
+               FILE_BUCKET=$(shipctl get_resource_version_key "$RES_FILE" "S3_BUCKET")
+            - |
+               S3_BUCKET_FROM_PATH="$FILE_BUCKET""$TAR_FILE_NAME"
+               S3_BUCKET_TO_PATH="$ARTIFACTS_BUCKET/$REL_VER/$CONTEXT-$REL_VER.tar.gz"
+               aws s3 cp --acl public-read "$S3_BUCKET_FROM_PATH" "$S3_BUCKET_TO_PATH"
+            - |
+               pushd $(shipctl get_resource_meta "shipit_gh_ssh")
+                 shipctl get_json_value integration.json 'privateKey' > gh_ssh.key
+                 chmod 600 gh_ssh.key
+                 ssh-add gh_ssh.key
+               popd
+            - pushd $(shipctl get_resource_state "$RES_REPO")
+            - |
+               git remote add up $GIT_PATH
+               git remote -v
+               git checkout master
+            - |
+               git pull --tags
+               if git tag -d $REL_VER; then
+                 git push --delete up $REL_VER
+               fi
+            - |
+               git checkout $REPO_COMMIT
+               git tag $REL_VER
+               git push up $REL_VER
+    on_success:
+      script:
+        - shipctl put_resource_state_multi $JOB_NAME "versionName=$REL_VER" "TAG_COMMIT_SHA=$REPO_COMMIT" "S3_FILENAME=$S3_BUCKET_TO_PATH"
