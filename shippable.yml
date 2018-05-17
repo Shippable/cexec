@@ -70,14 +70,15 @@ jobs:
                REPO_COMMIT=$(shipctl get_resource_version_key "$RES_FILE" "FILE_REPO_COMMIT_SHA")
                UP_TAR_FILENAME=$(shipctl get_resource_version_key "$RES_FILE" "TAR_FILENAME")
                UP_ZIP_FILENAME=$(shipctl get_resource_version_key "$RES_FILE" "ZIP_FILENAME")
+               UP_TAG_VER=$(shipctl get_resource_version_key "$RES_FILE" "TAG_VER")
                S3_URL=$(shipctl get_resource_version_key "$RES_FILE" "S3_URL")
                WEB_URL=$(shipctl get_resource_version_key "$RES_FILE" "WEB_URL")
             - |
                TAR_FILENAME=$CONTEXT-$TAG_VER.tar.gz
-               aws s3 cp --acl public-read "$S3_URL/$UP_TAR_FILENAME" "$S3_URL/$TAG_VER/$TAR_FILENAME"
+               aws s3 cp --acl public-read "$S3_URL/$UP_TAG_VER/$UP_TAR_FILENAME" "$S3_URL/$TAG_VER/$TAR_FILENAME"
             - |
                ZIP_FILENAME=$CONTEXT-$TAG_VER.zip
-               aws s3 cp --acl public-read "$S3_URL/$UP_ZIP_FILENAME" "$S3_URL/$TAG_VER/$ZIP_FILENAME"
+               aws s3 cp --acl public-read "$S3_URL/$UP_TAG_VER/$UP_ZIP_FILENAME" "$S3_URL/$TAG_VER/$ZIP_FILENAME"
             - |
                pushd $(shipctl get_resource_meta "shipit_gh_ssh")
                  shipctl get_json_value integration.json 'privateKey' > gh_ssh.key
