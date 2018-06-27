@@ -310,9 +310,6 @@ class ScriptRunner(Base):
         with self.console_buffer_lock:
             self.console_buffer.append(console_out)
 
-        if len(self.console_buffer) > self.config['CONSOLE_BUFFER_LENGTH']:
-            self.flush_console_buffer()
-
     def flush_console_buffer(self):
         if len(self.console_buffer) == 0:
             self.log.debug('No console output to flush')
