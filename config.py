@@ -38,6 +38,15 @@ class Config(dict):
         self['MAX_CONSOLES_SIZE_MB'] = os.getenv('MAX_CONSOLES_SIZE_MB', 16)
         self['MAX_CONSOLES_SIZE_BYTES'] = self['MAX_CONSOLES_SIZE_MB'] * 1024 * 1024
 
+        # New build runner switch/params
+        self['IS_NEW_BUILD_RUNNER_SUBSCRIPTION'] = \
+            os.getenv('IS_NEW_BUILD_RUNNER_SUBSCRIPTION') == 'true'
+        self['MAX_LOG_LINES_TO_FLUSH'] = \
+            int(os.getenv('MAX_LOG_LINES_TO_FLUSH', 20))
+        self['MAX_LOGS_FLUSH_WAIT_TIME_IN_S'] = \
+            float(os.getenv('MAX_LOGS_FLUSH_WAIT_TIME_IN_S', 3))
+        self['LOGS_FILE_READ_WAIT_TIME_IN_S'] = \
+            float(os.getenv('LOGS_FILE_READ_WAIT_TIME_IN_S', 0.1))
 
         for k, v in self.iteritems():
             if v == '':
@@ -54,4 +63,3 @@ class Config(dict):
         for k, v in self.iteritems():
             print('{0} - {1}'.format(k, v))
         return ''
-
