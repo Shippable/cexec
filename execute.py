@@ -4,6 +4,7 @@ import subprocess
 from shippable_adapter import ShippableAdapter
 from base import Base
 from script_runner import ScriptRunner
+from script_runner2 import ScriptRunner2
 
 class Execute(Base):
     def __init__(self):
@@ -107,9 +108,15 @@ class Execute(Base):
                     error_message = 'No script to execute in step ' \
                         ' {0}'.format(step)
                     raise Exception(error_message)
-                script_runner = ScriptRunner(self.job_id,
-                    self.shippable_adapter, flushed_consoles_size_in_bytes,
-                    sent_console_truncated_message)
+                if self.config['IS_NEW_BUILD_RUNNER_SUBSCRIPTION']:
+                    script_runner = ScriptRunner2(self.job_id,
+                        self.shippable_adapter, flushed_consoles_size_in_bytes,
+                        sent_console_truncated_message)
+                else:
+                    script_runner = ScriptRunner(self.job_id,
+                        self.shippable_adapter, flushed_consoles_size_in_bytes,
+                        sent_console_truncated_message)
+
                 script_status, script_exit_code, should_continue, \
                     flushed_consoles_size_in_bytes, \
                     sent_console_truncated_message = \
