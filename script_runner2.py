@@ -374,7 +374,7 @@ class ScriptRunner2(Base):
             except Exception as ex:
                 trace = traceback.format_exc()
                 error = '{0}: {1}'.format(str(ex), trace)
-                self._append_to_error_buffer(error)
+                self.log.error(error)
 
     def send_console_truncated_message(self):
         self.log.debug('Flushing final {0} MB limit message'.format(

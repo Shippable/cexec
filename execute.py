@@ -101,6 +101,9 @@ class Execute(Base):
         if exit_code > 0:
             return exit_code
 
+        if self.config['IS_NEW_BUILD_RUNNER_SUBSCRIPTION']:
+            self.log.warn('Using new build runner')
+
         for step in self.steps:
             if step.get('who', None) == self.config['WHO']:
                 script = step.get('script', None)
